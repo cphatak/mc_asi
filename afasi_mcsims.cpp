@@ -81,7 +81,7 @@ int main ( int argc, char *argv[] )
     }
     else
     {
-        m = 5;
+        m = 3;
     }
     if (2 < argc)
     {
@@ -89,7 +89,7 @@ int main ( int argc, char *argv[] )
     }
     else
     {
-        n = 5;
+        n = 3;
     }
     if (3 < argc)
     {
@@ -129,7 +129,7 @@ int main ( int argc, char *argv[] )
     }
     else
     {
-        a = 350;
+        a = 350.0;
     }
     if (8 < argc)
     {
@@ -137,7 +137,7 @@ int main ( int argc, char *argv[] )
     }
     else
     {
-        s = 120;
+        s = 120.0;
     }
     if (9 < argc)
     {
@@ -162,6 +162,8 @@ int main ( int argc, char *argv[] )
     cout << "\n";
     cout << " The number of rows is M = " << m << "\n";
     cout << " The number of columns is N = " << n << "\n";
+    cout << " The lattice parameter is A = " << a << "\n";
+    cout << " The separation distance is S = " << s << "\n";
     cout << " The total number of islands is = " << n_isl << "\n";
     cout << " The number of iterations is  = " << iterations << "\n";
     cout << " The start temperature parameter is = " << st_temp << "\n";
@@ -190,7 +192,7 @@ int main ( int argc, char *argv[] )
         for (j = 0; j < n_isl; j++)
         {
             distmap[i][j] = sqrt(pow((cenx[i]-cenx[j]),2) + pow((ceny[i]-ceny[j]),2));
-            cout << distmap[i][j] << "\n";
+            //cout << distmap[i][j] << "\n";
         }
     }
     
@@ -265,6 +267,7 @@ int initialize_lattice ( int m, int n, double a, double s, double cenx[], double
             ceny[count+4] = j*sqrt(3)*a + a*sqrt(3)/4 + s/4;
             cenx[count+5] = i*2*a + j*a + sqrt(3)*s/4;
             ceny[count+5] = j*sqrt(3)*a + a*sqrt(3)/4 - s/4;
+            count = count + 6;
         }
     }
     return 1;
