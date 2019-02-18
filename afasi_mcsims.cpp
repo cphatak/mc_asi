@@ -9,12 +9,20 @@
 # include <cmath>
 # include <ctime>
 # include <string>
+# include <algorithm>
+# include <vector>
+# include <chrono>
 
+#define PI 3.14159265
 using namespace std;
+using namespace std::chrono;
 
+//Function initializations to be used in the program.
 int main ( int argc, char *argv[] );
 int initialize_lattice ( int m, int n, double a, double s, double cenx[], double ceny[], double angles[] );
+double calc_energy ( int n_isl, double *distmap, double cenx[], double ceny[], double magx[], double magy[], double max_nn_dist, double max_nn_num, double energy_array[] );
 void timestamp ( );
+
 
 //****************************************************************
 
@@ -42,16 +50,19 @@ int main ( int argc, char *argv[] )
 //
 // Licensing:
 //
-// This code is distributed under the GNU LGPL license.
+// This code is distributed under the GNU GPL license.
 //
 // Modified:
 //
-// 11 February 2019
+// 17 February 2019
 //
 // Author:
 //
 // Charudatta Phatak (cd@anl.gov)
 {
+    // Get starting timepoint
+    auto start = high_resolution_clock::now();
+    
     int lattice;
     int iterations;
     int m;
@@ -62,9 +73,9 @@ int main ( int argc, char *argv[] )
     double red_temp;
     double a;
     double s;
-
     
-// Calculated parameters
+    
+    // Calculated parameters
     double n_temp;
     int n_isl;
     
@@ -72,9 +83,9 @@ int main ( int argc, char *argv[] )
     cout << "\n";
     cout << "AF_ASI MC sim\n";
     cout << "c++ version\n";
-//
-//  Get Input
-//
+    //
+    //  Get Input
+    //
     if (1 < argc )
     {
         m = atoi ( argv[1] );
@@ -147,60 +158,112 @@ int main ( int argc, char *argv[] )
     {
         seed = 1123581119;
     }
-//
-// Compute number of temp. steps.
-//
+    //
+    // Compute number of temp. steps.
+    //
     n_temp = log(en_temp/st_temp)/log(red_temp);
-//
-// Compute the total number of islands.
-//
+    //
+    // Compute the total number of islands.
+    //
     n_isl = m*n*6;
     double cenx[n_isl];
     double ceny[n_isl];
     double angles[n_isl];
+    //
+    // Set the max. distance and max. nearest neighbors
+    //
+    double max_nn_dist = 500.0;
+    double max_nn_num = 9;
     
+    //
+    // Print useful information for the MC simulations.
+    //
     cout << "\n";
+    cout << "Parameters that can be changed by passing arguments in the order \n";
+    cout << "------------------------------------------- \n";
     cout << " The number of rows is M = " << m << "\n";
     cout << " The number of columns is N = " << n << "\n";
-    cout << " The lattice parameter is A = " << a << "\n";
-    cout << " The separation distance is S = " << s << "\n";
-    cout << " The total number of islands is = " << n_isl << "\n";
     cout << " The number of iterations is  = " << iterations << "\n";
     cout << " The start temperature parameter is = " << st_temp << "\n";
     cout << " The end temperature parameter is = " << en_temp << "\n";
     cout << " The reduction factor for temperature parameter is = " << red_temp << "\n";
-    cout << " Total number of temperature steps is = " << n_temp << "\n";
+    cout << " The lattice parameter is A = " << a << "\n";
+    cout << " The separation distance is S = " << s << "\n";
     cout << " The random generator seed = " << seed << "\n";
+    cout << "------------------------------------------- \n";
+    cout << "FIXED/Derived PARAMETERS:\n";
+    cout << " Maximum number of N. Neighbors = " << max_nn_num << "\n";
+    cout << " Maximum neighbor distance is = " << max_nn_dist << "\n";
+    cout << " The total number of islands is = " << n_isl << "\n";
+    cout << " Total number of temperature steps is = " << n_temp << "\n";
     cout << "\n";
-//
-// Initialize the lattice
-//
+    //
+    // Initialize the lattice
+    //
     cout << "Initializing lattice..\n";
     lattice = initialize_lattice(m,n,a,s,cenx,ceny,angles);
-    int ii;
-    for (ii = 0; ii < n_isl; ii++)
-    {
-        cout << cenx[ii] << ", " << ceny[ii] << ", " << angles[ii] << "\n";
-    }
-//
-// Compute the distance matrix
-//
-    double distmap[n_isl][n_isl];
+    
+    //verbose infor for initializing lattice
+    //int ii;
+    //for (ii = 0; ii < n_isl; ii++)
+    //{
+    //    cout << cenx[ii] << ", " << ceny[ii] << ", " << angles[ii] << "\n";
+    //}
+    
+    //
+    // Compute the distance matrix
+    //
+    cout << "Computing distance matrix..\n";
+    double *distmap = new double[n_isl*n_isl];
     int i,j;
     for (i = 0; i < n_isl; i++)
     {
         for (j = 0; j < n_isl; j++)
         {
-            distmap[i][j] = sqrt(pow((cenx[i]-cenx[j]),2) + pow((ceny[i]-ceny[j]),2));
-            //cout << distmap[i][j] << "\n";
+            distmap[i + j*n_isl] = sqrt(pow((cenx[i]-cenx[j]),2) + pow((ceny[i]-ceny[j]),2));
+           // cout << distmap[i][j] << "\t";
         }
+        //cout << "\n";
     }
     
-    cout << "\n";
-    timestamp ( );
+    //
+    // Define the magnetization arrays.
+    //
+    cout << "Computing Magnetization.. \n";
+    double magx[n_isl];
+    double magy[n_isl];
+    for (i = 0; i < n_isl; i++)
+    {
+        magx[i] = cos(angles[i] * PI / 180);
+        magy[i] = sin(angles[i] * PI / 180);
+        //cout << magx[i] << "\t" << magy[i] << "\n";
+    }
     
+    //
+    // Calculate the energy
+    //
+    double energy_array[n_isl];
+    double en = 0;
+    en = calc_energy(n_isl, (double *)distmap, cenx, ceny, magx, magy, max_nn_dist, max_nn_num, energy_array);
+    cout << "Total energy: " << en << "\n";
+    
+    
+    //end
+    // Get ending timepoint
+    auto stop = high_resolution_clock::now();
+    
+    // Get duration. Substart timepoints to
+    // get durarion. To cast it to proper unit
+    // use duration cast method
+    auto duration = duration_cast<seconds>(stop - start);
+    
+    cout << "Time taken by function: " << duration.count() << " seconds" << "\n";
+    delete[] distmap;
     return 0;
 }
+//
+// -----------------From here on are all the functions for the main program ----------------
+//
 //***************************************************************************
 
 int initialize_lattice ( int m, int n, double a, double s, double cenx[], double ceny[], double angles[] )
@@ -226,7 +289,7 @@ int initialize_lattice ( int m, int n, double a, double s, double cenx[], double
 //
 // Licensing:
 //
-// This code is distributed under the GNU LGPL license.
+// This code is distributed under the GNU GPL license.
 //
 // Modified:
 //
@@ -236,7 +299,6 @@ int initialize_lattice ( int m, int n, double a, double s, double cenx[], double
 //
 // Charudatta Phatak (cd@anl.gov)
 {
-    int *lattice;
     int i = 0;
     int j = 0;
     int count = 0;
@@ -271,6 +333,113 @@ int initialize_lattice ( int m, int n, double a, double s, double cenx[], double
         }
     }
     return 1;
+}
+
+//***************************************************************************
+
+double calc_energy ( int n_isl, double *distmap, double cenx[], double ceny[], double magx[], double magy[], double max_nn_dist, double max_nn_num, double energy_array[] )
+
+//***************************************************************************
+//
+// Purpose:
+//
+//  CALC_ENERGY calculates and returns an array consisting of dipolar energies for
+//  for each island.
+//
+// Usage:
+//
+//  calc_energy(distmap, n_isl, cenx, ceny, magx, magy, max_nn_dist, max_nn_num, energy_array)
+//
+//  *DISTMAP - distance map calculated as the distance of each island from another
+//  *N_ISL - Number of islands.
+//  *CENX - Array consisting the x value of centers of each island
+//  *CENY - Array consisting the y value of centers of each island
+//  *MAGX - Array consisting the x component of magnetization of each island
+//  *MAGY - Array consisting of the y component of magnetization of each island
+//  *MAX_NN_NUM - Maximum number of nearest neighbors to be considered
+//  *MAX_NN_DIST - Maximum number of nearest neighbor distance.
+//  *ENERGY_ARRAY - Array consisting of energy of each island.
+//
+// Licensing:
+//
+// This code is distributed under the GNU GPL license.
+//
+// Modified:
+//
+// 17 February 2019
+//
+// Author:
+//
+// Charudatta Phatak (cd@anl.gov)
+{
+    //variables for counters
+    int i;
+    int j;
+    int cnt;
+    int arr_index;
+    double dist_val;
+    //variables for energy expression
+    double si_sj;
+    double r_ij;
+    double si_rij;
+    double sj_rji;
+    //total energy variable
+    double temp_energy = 0;
+    double total_energy = 0;
+    
+    //defining vector array for sorting and indexing nearest neighbors.
+    vector<vector<double> > nn_array;
+    nn_array.resize(n_isl);
+    for (i = 0; i < n_isl; i++)
+    {
+        nn_array[i].resize(2);
+    }
+    
+    //loop over each island i, calculate nearest neighbors, sort them, and compute energy.
+    for (int i = 0; i < n_isl; i++)
+    {
+        // get the array of neighbors
+        for (int j = 0; j < n_isl; j++)
+        {
+            //nn_array[j][0] = distmap[i][j];
+            nn_array[j][0] = distmap[i + j*n_isl];
+            nn_array[j][1] = static_cast<double>(j);
+        }
+        
+        //next we sort all the elements of the array
+        std::sort(nn_array.begin(),nn_array.end());
+
+        //loop over the max. nearest neighbors.
+        for (cnt = 1; cnt < n_isl; cnt++)
+        {
+            if (cnt <= max_nn_num)
+            {
+                
+                //assign the array index of the nearest neighbors
+                arr_index = static_cast<int>(nn_array[cnt][1]);
+                
+                dist_val = nn_array[cnt][0];
+                //cout << arr_index << "\t" << dist_val << "\n";
+                
+                if (dist_val <= max_nn_dist)
+                {
+                    //compute various terms of the energy expression
+                    si_sj = magx[i]*magx[arr_index] + magy[i]*magy[arr_index];
+                    r_ij = dist_val;
+                    si_rij = (cenx[i]-cenx[arr_index])*magx[i] + (ceny[i]-ceny[arr_index])*magy[i];
+                    sj_rji = (cenx[arr_index]-cenx[i])*magx[arr_index] + (ceny[arr_index]-ceny[i])*magy[arr_index];
+                    temp_energy = (si_sj)/pow(r_ij,3) - (3.0 * si_rij * sj_rji)/pow(r_ij,5);
+                    total_energy += temp_energy;
+                    //cout << si_sj << ", " << r_ij << ", " << si_rij << ", " << sj_rji << ", " << temp_energy << ", " << total_energy << "\n";
+                    energy_array[i] += temp_energy;
+                }
+  
+            }
+        }
+        
+    }
+    //cout << "\n finishing \n";
+    return total_energy/2.0;
 }
 
 //***************************************************************************
