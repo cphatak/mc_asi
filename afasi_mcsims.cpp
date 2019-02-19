@@ -14,6 +14,9 @@
 # include <chrono>
 
 #define PI 3.14159265
+#define MU0 4.0*PI*1e-7
+#define kB 1.38e-23
+
 using namespace std;
 using namespace std::chrono;
 
@@ -76,7 +79,7 @@ int main ( int argc, char *argv[] )
     
     
     // Calculated parameters
-    double n_temp;
+    int n_temp;
     int n_isl;
     
     timestamp ( );
@@ -161,7 +164,7 @@ int main ( int argc, char *argv[] )
     //
     // Compute number of temp. steps.
     //
-    n_temp = log(en_temp/st_temp)/log(red_temp);
+    n_temp = static_cast<int>(log(en_temp/st_temp)/log(red_temp));
     //
     // Compute the total number of islands.
     //
@@ -174,6 +177,9 @@ int main ( int argc, char *argv[] )
     //
     double max_nn_dist = 500.0;
     double max_nn_num = 9;
+    
+    //seed random number generator
+    srand((unsigned)time(0));
     
     //
     // Print useful information for the MC simulations.
@@ -232,10 +238,21 @@ int main ( int argc, char *argv[] )
     cout << "Computing Magnetization.. \n";
     double magx[n_isl];
     double magy[n_isl];
+    int ran_mult = 1;
+    
     for (i = 0; i < n_isl; i++)
     {
-        magx[i] = cos(angles[i] * PI / 180);
-        magy[i] = sin(angles[i] * PI / 180);
+        double rr = rand() / double (RAND_MAX);
+        if (rr < 0.5)
+        {
+            ran_mult = (-1)
+        }
+        else
+        {
+            ran_mult = 1
+        }
+        magx[i] = cos(angles[i] * PI / 180) * ran_mult;
+        magy[i] = sin(angles[i] * PI / 180) * ran_mult;
         //cout << magx[i] << "\t" << magy[i] << "\n";
     }
     
@@ -243,9 +260,58 @@ int main ( int argc, char *argv[] )
     // Calculate the energy
     //
     double energy_array[n_isl];
-    double en = 0;
-    en = calc_energy(n_isl, (double *)distmap, cenx, ceny, magx, magy, max_nn_dist, max_nn_num, energy_array);
-    cout << "Total energy: " << en << "\n";
+    double curr_energy = 0;
+    curr_energy = calc_energy(n_isl, (double *)distmap, cenx, ceny, magx, magy, max_nn_dist, max_nn_num, energy_array);
+    cout << "Total energy: " << curr_energy << "\n";
+    
+    // Here we start the loop over temperature range.
+    int temp_i = 0;
+    int mc_i = 0;
+    double temp = st_temp;
+    
+    //variables for storing information.
+    double latt_energy[n_temp];
+    double latt_spheat[n_temp];
+    double latt_netmag[n_temp];
+    double latt_susc[n_temp];
+    double temp_arr[n_temp];
+    
+    //Multiplier for the energy value/partition function.
+    double mult_fac = MU0 * 1e-9 * 10;
+    
+    for (temp_i = 0; temp_i < n_temp; temp_i ++)
+    {
+        //define variables for storing MC run info.
+        double avg_en = 0;
+        double avg_en2 = 0;
+        double avg_mag = 0;
+        double avg_mag2 = 0;
+        long n_accept = 0;
+        
+        //beta value for partition function.
+        double beta_val = mult_fac/(kB * temp);
+        
+        //now loop over MC iters.
+        for (mc_i = 0; mc_i < iterations; mc_i++)
+        {
+            //Loop over total number of islands.
+            for (int isl = 0; isl < n_isl; isl++)
+            {
+                //Pick a random island and change its magnetization.
+                int site = rand() % n_isl;
+                
+                //change the magnetization.
+                magx[site] *= (-1);
+                magy[site] *= (-1);
+                
+                
+
+            }
+        }
+        
+    }
+    
+
     
     
     //end
