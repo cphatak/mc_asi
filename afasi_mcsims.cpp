@@ -12,6 +12,7 @@
 # include <algorithm>
 # include <vector>
 # include <chrono>
+# include <random>
 
 #define PI 3.14159265
 #define MU0 4.0*PI*1e-7
@@ -245,11 +246,11 @@ int main ( int argc, char *argv[] )
         double rr = rand() / double (RAND_MAX);
         if (rr < 0.5)
         {
-            ran_mult = (-1)
+            ran_mult = (-1);
         }
         else
         {
-            ran_mult = 1
+            ran_mult = 1;
         }
         magx[i] = cos(angles[i] * PI / 180) * ran_mult;
         magy[i] = sin(angles[i] * PI / 180) * ran_mult;
@@ -269,12 +270,20 @@ int main ( int argc, char *argv[] )
     int mc_i = 0;
     double temp = st_temp;
     
+    cout << "Temperature: " << temp << "\n";
+    
     //variables for storing information.
     double latt_energy[n_temp];
     double latt_spheat[n_temp];
     double latt_netmag[n_temp];
     double latt_susc[n_temp];
     double temp_arr[n_temp];
+    
+    //random number for partition function
+    double low_bound = 0;
+    double up_bound = 1;
+    std::uniform_real_distribution<double> unif(low_bound,up_bound);
+    std::default_random_engine re;
     
     //Multiplier for the energy value/partition function.
     double mult_fac = MU0 * 1e-9 * 10;
@@ -287,6 +296,7 @@ int main ( int argc, char *argv[] )
         double avg_mag = 0;
         double avg_mag2 = 0;
         long n_accept = 0;
+        double new_energy = 0;
         
         //beta value for partition function.
         double beta_val = mult_fac/(kB * temp);
@@ -304,14 +314,62 @@ int main ( int argc, char *argv[] )
                 magx[site] *= (-1);
                 magy[site] *= (-1);
                 
+                //calculate the energy.
+                new_energy = calc_energy(n_isl, (double *)distmap, cenx, ceny, magx, magy, max_nn_dist, max_nn_num, energy_array);
                 
-
+                //calculate the difference
+                double dE = new_energy - curr_energy;
+                
+                //check if we accept it or not.
+                if (dE < 0)
+                {
+                    n_accept += 1;
+                    curr_energy = new_energy;
+                }
+                
+                if (dE > 0)
+                {
+                    double a_ran_num = unif(re);
+                    double part_fun = exp(-dE * beta_val);
+                    if (a_ran_num < part_fun)
+                    {
+                        n_accept += 1;
+                        curr_energy = new_energy;
+                    }
+                    else
+                    {
+                        magx[site] *= (-1);
+                        magy[site] *= (-1);
+                    }
+                }
+                
+                //compute thermodynamic variables.
+                avg_en += curr_energy;
+                avg_en2 += (curr_energy * curr_energy);
+                double mag_val = 0;
+                for (int i = 0; i < n_isl; i++)
+                {
+                    mag_val += sqrt(magx[i]*magx[i] + magy[i]*magy[i]);
+                }
+                avg_mag += mag_val;
+                avg_mag2 += (mag_val * mag_val);
+                
             }
         }
+        //Compute the data
+        double cn = 1.0/(iterations * n_isl);
+        latt_energy[temp_i] = avg_en * cn;
+        latt_netmag[temp_i] = avg_mag * cn;
+        latt_spheat[temp_i] = (avg_en2*cn - avg_en*avg_en*cn*cn)/(temp*temp);
+        latt_susc[temp_i] = (avg_mag2*cn - avg_mag*avg_mag*cn*cn)/(temp);
+        temp_arr[temp_i] = temp;
+        //Output values.
+        cout << temp << "\t" << latt_energy[temp_i] << "\t" << latt_netmag[temp_i] << "\t" << latt_spheat[temp_i] << "\t" << latt_susc[temp_i] << "\n";
+        
+        //Update temperature
+        temp *= red_temp;
         
     }
-    
-
     
     
     //end
