@@ -29,10 +29,7 @@ def init_afasi_latt(a = 350, # lattice parameter
                     nx = 3, # repeat along x
                     ny = 3, # repeat along y
                     max_nn_dist = 500, # max. distance of nearest neighbors
-                    max_nn_num = 9, # max. number of nearest neighbors
-                    centers = 0, # array to hold the centers
-                    angles = 0, # array to hold angles
-                    nn_inds = 0, # array to hold the indices of the nearest neighbors
+                    max_nn_num = 9 # max. number of nearest neighbors
                     ):
 
     #compute total number of islands
@@ -78,31 +75,38 @@ def init_afasi_latt(a = 350, # lattice parameter
     # next we go through each island and sort the indices of the nearest neighbors.
     nn_inds = np.zeros([n_isl,max_nn_num])
     for i in range(n_isl):
-        inds = 
-    return 1
+        inds = np.argsort(distmap[i,:])
+        for cnt in range(1,max_nn_num+1):
+            j = inds[cnt]
+            if (distmap[i,j] <= max_nn_dist):
+                nn_inds[i,cnt-1] = j
+
+    return [centers,angles,nn_inds]
 #------------------------------------------------------------------
 #
 # Calc_Energy function for AFASI
 #
-def calc_energy(distmap = 0, # distance map of islands
-                centers = 0, # array of centers of islands
+def calc_energy(centers = 0, # array of centers of islands
                 mag = 0, # array of magnetization of islands
+                nn_inds = 0 # array for nearest neighbors for dipolar interaction.
                 ):
 
     # number of islands
-    nm, n_isl = centers.shape
+    n_isl,num_neighbors = nn_inds.shape
 
     # Energy variable
     tot_energy = 0
 
     # loop over each island and compute the neighbors
     for i in range(n_isl):
-        inds = np.argsort(distmap[i,:])
-        for cnt in range(1,max_nn_num):
-            j = inds[cnt]
-            if (distmap[i,j] <= max_nn_dist):
+        for cnt in range(num_neighbors):
+            j = nn_inds[i,cnt].astype('int')
+            if (i != j):
                 si_sj = mag[0,i]*mag[0,j] + mag[1,i]*mag[1,j]
-                r_ij = distmap[i,j]
+                r_ij = np.sqrt((centers[0,i]-centers[0,j])**2 +
+                               (centers[1,i]-centers[1,j])**2)
+                if (r_ij == 0):
+                        print(i,j)
                 si_rij = (centers[0,i]-centers[0,j])*mag[0,i] + (centers[1,i]-centers[1,j])*mag[1,i]
                 sj_rji = (centers[0,j]-centers[0,i])*mag[0,j] + (centers[1,j]-centers[1,i])*mag[1,j]
                 tot_energy += (si_sj/r_ij**3 - (3.0*si_rij*sj_rji)/r_ij**5)
@@ -116,9 +120,9 @@ def calc_energy(distmap = 0, # distance map of islands
 
 #def afasi_mcrun(jobID = 'run1',
 a = 350.0 #lattice parameter
-s = 120.0 #island separation
-nx = 5 #repeat along x
-ny = 5 #repeat along y,
+s = 150.0 #island separation
+nx = 11 #repeat along x
+ny = 11 #repeat along y,
 mc_iters = 1000 #number of MC iterations
 eq_iters = 0 #number of equilibriation iterations
 start_temp = 1000 #Start temperature
@@ -139,9 +143,11 @@ n_isl = nx * ny * 6
 
 centers = np.zeros([2,n_isl])
 angles = np.zeros([n_isl])
+nn_inds = np.zeros([n_isl,max_nn_num])
 #next we initialize the lattice.
-lattice = init_afasi_latt(a = a, s = s, nx = nx, ny = ny,
-                       centers = centers, angles = angles)
+[centers,angles,nn_inds] = init_afasi_latt(a = a, s = s, nx = nx, ny = ny, max_nn_dist = max_nn_dist,
+                          max_nn_num = max_nn_num)#, centers = centers, angles = angles, nn_inds = nn_inds)
+
 
 #next we compute the distance matrix.
 distmap = np.zeros([n_isl,n_isl])
@@ -156,8 +162,7 @@ mag[0,:] = np.cos(np.deg2rad(angles))
 mag[1,:] = np.sin(np.deg2rad(angles))
 
 #next we calculate energy
-curr_energy = calc_energy(distmap = distmap, centers = centers, mag = mag,
-                          max_nn_dist = max_nn_dist, max_nn_num = max_nn_num)
+curr_energy = calc_energy(centers = centers, mag = mag, nn_inds = nn_inds)
 
 
 #compute total number of temperature steps
