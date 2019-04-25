@@ -18,18 +18,27 @@ import time as time
 #
 # Init lattice function for AFASI
 #
+# This function will initialize the lattice for given set of lattice parameters
+# and num of islands along x and y. The output will be an array centers consisting
+# of positions of each island (x,y), and an array angles with angle of each island
+# for magnetization, and an array nn_inds consisting of nearest neighbor indices
+# for each island to be considered for dipolar interactions.
+#
 def init_afasi_latt(a = 350, # lattice parameter
                     s = 120, # island separation
                     nx = 3, # repeat along x
                     ny = 3, # repeat along y
+                    max_nn_dist = 500, # max. distance of nearest neighbors
+                    max_nn_num = 9, # max. number of nearest neighbors
                     centers = 0, # array to hold the centers
                     angles = 0, # array to hold angles
+                    nn_inds = 0, # array to hold the indices of the nearest neighbors
                     ):
 
     #compute total number of islands
-    #n_isl = nx * ny * 6
-    #centers = np.zeros([2,n_isl])
-    #angles = np.zeros([n_isl])
+    n_isl = nx * ny * 6
+    centers = np.zeros([2,n_isl])
+    angles = np.zeros([n_isl])
     count = 0
 
     for i in range(nx):
@@ -59,6 +68,17 @@ def init_afasi_latt(a = 350, # lattice parameter
             #increment count
             count += 6
 
+    # next we calculate the distance map for the lattice
+    distmap = np.zeros([n_isl,n_isl])
+    for i in range(n_isl):
+        for j in range(n_isl):
+            distmap[i,j] = np.sqrt((centers[0,i]-centers[0,j])**2 +
+                                   (centers[1,i]-centers[1,j])**2)
+
+    # next we go through each island and sort the indices of the nearest neighbors.
+    nn_inds = np.zeros([n_isl,max_nn_num])
+    for i in range(n_isl):
+        inds = 
     return 1
 #------------------------------------------------------------------
 #
@@ -67,8 +87,6 @@ def init_afasi_latt(a = 350, # lattice parameter
 def calc_energy(distmap = 0, # distance map of islands
                 centers = 0, # array of centers of islands
                 mag = 0, # array of magnetization of islands
-                max_nn_dist = 500, # max. distance of nearest neighbors
-                max_nn_num = 9, # max. number of nearest neighbors
                 ):
 
     # number of islands
