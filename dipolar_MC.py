@@ -40,6 +40,7 @@ class Dipolar_MC(object):
         self.mc_iters = 1000 #total MC iters
         self.eq_iters = 0 #number of iters for equilbriation before computing
         self.temp = 10 #dimensionless temperature parameter
+        self.mult_fac = physcon.mu_0*1e-9/physcon.k
         
         #other derived parameters
         temp, n_isl = centers.shape
@@ -141,7 +142,7 @@ class Dipolar_MC(object):
                 
                 if (dE > 0):
                     #we check if we should accept the high energy change
-                    if (np.random.random_sample() < np.exp(-dE/self.temp)):
+                    if (np.random.random_sample() < np.exp(-dE*self.mult_fac/self.temp)):
                         self.n_highaccept += 1
                         self.energy = new_energy
                     else:
