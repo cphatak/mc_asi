@@ -104,6 +104,7 @@ red_fac = 0.90 #reduction factor
 save_file = 500 #save config data during MC runs
 verbose = True
 display = False
+dir = '/Users/cphatak/ANL_work/artificial_qsl/mc_sims/py/'
 
 #Set the next nearest neghbors
 max_nn_num = 9
@@ -133,7 +134,7 @@ fig1, ax1 = plt.subplots(figsize=(8,8))
 ax1.set_title('MC sims initial state')
 qq = ax1.quiver(dipolar_MC1.centers[0,:],dipolar_MC1.centers[1,:],dipolar_MC1.magx,dipolar_MC1.magy,pivot='mid')
 plt.draw()
-plt.savefig('initial_state.png',bbox_inches='tight')
+plt.savefig(dir+'initial_state.png',bbox_inches='tight')
 plt.close()
 
 #compute total number of temperature steps
@@ -152,7 +153,7 @@ latt_mag = np.zeros([n_temp])
 
 #open data file to save the runtime data
 data_file = "Dipolar_MC1_"+jobID+".txt"
-f = open(data_file,"w+")
+f = open(dir+data_file,"w+")
 d = datetime.datetime.now()
 f.write('// Runtime data file for variables.\n')
 f.write('// Created: C. Phatak, ANL \n')
@@ -165,7 +166,7 @@ f.close()
 for i in range(n_temp):
     dipolar_MC1.temp = temp_var[i]
     dipolar_MC1.MC_move()
-    f = open(data_file,"a+")
+    f = open(dir+data_file,"a+")
     f.write('{0:.3f}, {1:.4e}, {2:.3f}, {3:.4e}, {4:.4e} \n'.format(dipolar_MC1.temp, dipolar_MC1.avgenergy, dipolar_MC1.netmag, dipolar_MC1.sp_heat, dipolar_MC1.suscep))
     f.close()
     print(dipolar_MC1.temp, dipolar_MC1.avgenergy, dipolar_MC1.netmag, dipolar_MC1.sp_heat, dipolar_MC1.suscep, dipolar_MC1.n_highaccept, dipolar_MC1.n_lowaccept, dipolar_MC1.n_noaccept)
@@ -174,7 +175,7 @@ for i in range(n_temp):
     ax1.set_title('Lattice State at {0:.3f}'.format(dipolar_MC1.temp))
     q1 = ax1.quiver(dipolar_MC1.centers[0,:],dipolar_MC1.centers[1,:],dipolar_MC1.magx,dipolar_MC1.magy,pivot='mid')
     plt.draw()
-    plt.savefig('Lattice_state_'+str(i)+'.png',bbox_inches='tight')
+    plt.savefig(dir+'Lattice_state_'+str(i)+'.png',bbox_inches='tight')
     plt.close()
 
 
