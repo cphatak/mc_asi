@@ -93,8 +93,8 @@ class Dipolar_MC(object):
                     tot_energy += (si_sj/r_ij**3 - (3.0*si_rij*sj_rji)/r_ij**5)
     
         #return total energy
-        self.energy = tot_energy/2.0
-        return 1
+        #self.energy = tot_energy/2.0
+        return tot_energy/2.0
 
     #------------------------------------------------------------------
     #
@@ -106,7 +106,7 @@ class Dipolar_MC(object):
     # It will also calculate the thermodynamic parameters such as sp. heat,
     # and susceptibility during the MC iters for a given temperature.
     #
-    def MC_move(self,verbose=False):
+    def MC_move(self,verbose=False,debug=False):
     
         #initialize arrays for holding various quantities
         avg_en = 0.0
@@ -124,6 +124,8 @@ class Dipolar_MC(object):
             for ii in range(self.n_isl):
                 # pick a random site in the lattice.
                 site = np.random.randint(0,self.n_isl)
+                if (debug):
+                    print(site)
     
                 #change the magnetization
                 self.magx[site] *= (-1)
@@ -134,22 +136,36 @@ class Dipolar_MC(object):
     
                 #difference in energy
                 dE = new_energy - self.energy
+                if (debug):
+                    print(dE)
     
                 #check if we should accept this energy or not
                 if (dE < 0):
                     self.n_lowaccept += 1
                     self.energy = new_energy
+                    if (debug):
+                        print('Low accept')
                 
                 if (dE > 0):
                     #we check if we should accept the high energy change
-                    if (np.random.random_sample() < np.exp(-dE*self.mult_fac/self.temp)):
+                    rnum = np.random.random_sample()
+                    part_fun = np.exp(-dE*self.mult_fac/self.temp)
+                    if (debug):
+                        print(rnum,part_fun)
+                    
+                    if (rnum < part_fun):
                         self.n_highaccept += 1
                         self.energy = new_energy
+                        if (debug):
+                            print('High accept')
+                            
                     else:
                         #we do not accept the change
                         self.magx[site] *= (-1)
                         self.magy[site] *= (-1)
                         self.n_noaccept += 1
+                        if (debug):
+                            print('No accept')
                     
                 #Next we start computing various thermo. terms
                 self.netmag = np.sqrt(np.sum(self.magx**2) + np.sum(self.magy**2))
