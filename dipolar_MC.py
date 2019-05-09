@@ -55,7 +55,7 @@ class Dipolar_MC(object):
         self.n_noaccept = 0
         self.energy = 0
         self.avgenergy = 0
-        self.netmag = np.sqrt(np.sum(self.magx**2) + np.sum(self.magy**2))
+        self.netmag = np.sqrt(np.sum(self.magx)**2 + np.sum(self.magy)**2)
         self.sp_heat = 0
         self.suscep = 0
         
@@ -168,7 +168,7 @@ class Dipolar_MC(object):
                             print('No accept')
                     
                 #Next we start computing various thermo. terms
-                self.netmag = np.sqrt(np.sum(self.magx**2) + np.sum(self.magy**2))
+                self.netmag = np.sqrt(np.sum(self.magx)**2 + np.sum(self.magy)**2)
                 
                 if (nn >= self.eq_iters):
                     avg_en += self.energy
