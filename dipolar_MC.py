@@ -10,10 +10,7 @@
 
 #import necessary modules
 import numpy as np
-import os as os
 import scipy.constants as physcon
-import datetime
-import time as time
 
 class Dipolar_MC(object):
 
