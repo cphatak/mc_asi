@@ -91,17 +91,18 @@ def init_afasi_latt(a = 350, # lattice parameter
 
 jobID = 'run1'
 a = 350.0 #lattice parameter
-s = 150.0 #island separation
-nx = 1 #repeat along x
-ny = 1 #repeat along y,
+s = 120.0 #island separation
+nx = 11 #repeat along x
+ny = 11 #repeat along y,
 mc_iters = 1000 #number of MC iterations
 eq_iters = 0 #number of equilibriation iterations
 start_temp = 1000 #Start temperature
-end_temp = 50 #end temperature
+end_temp = 1 #end temperature
+n_temp = 100 #number of temperature steps
 red_fac = 0.90 #reduction factor
 save_file = 500 #save config data during MC runs
 verbose = True
-display = False
+display = True
 dir = '/Users/cphatak/work/af_test/'
 
 #Set the next nearest neghbors
@@ -155,13 +156,12 @@ for i in range(dipolar_MC1.n_isl):
 
 f2.close()
 
-#compute total number of temperature steps
-#checking how long one MC run at high temperature takes.
+
+#MC iterations
 dipolar_MC1.mc_iters = mc_iters
 dipolar_MC1.eq_iters = eq_iters
 
-#MC iterations
-n_temp = 50
+#compute total number of temperature steps
 temp_var = np.linspace(start_temp,end_temp,n_temp)
 #variables to hold the values
 latt_energy = np.zeros([n_temp])
