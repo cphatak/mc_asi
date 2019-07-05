@@ -92,8 +92,8 @@ def init_afasi_latt(a = 350, # lattice parameter
 jobID = 'run1'
 a = 350.0 #lattice parameter
 s = 120.0 #island separation
-nx = 11 #repeat along x
-ny = 11 #repeat along y,
+nx = 3 #repeat along x
+ny = 3 #repeat along y,
 mc_iters = 1000 #number of MC iterations
 eq_iters = 0 #number of equilibriation iterations
 start_temp = 1000 #Start temperature
@@ -103,7 +103,7 @@ red_fac = 0.90 #reduction factor
 save_file = 500 #save config data during MC runs
 verbose = True
 display = True
-dir = '/Users/cphatak/work/af_test/'
+dir = '/Users/cphatak/work/af_test/run1/'
 
 #Set the next nearest neghbors
 max_nn_num = 9
@@ -123,11 +123,14 @@ nn_inds = np.zeros([n_isl,max_nn_num])
                           max_nn_num = max_nn_num)#, centers = centers, angles = angles, nn_inds = nn_inds)
 
 #next we initialize the Dipolar_MC Class for MC sims
+s1 = time.time()
 dipolar_MC1 = Dipolar_MC(centers = centers, angles = angles, nn_inds = nn_inds,
                          max_nn_num = max_nn_num, max_nn_dist = max_nn_dist)
 
-dipolar_MC1.energy = dipolar_MC1.Calc_Energy()
+t2 = time.time()
+dipolar_MC1.energy = dipolar_MC1.Calc_Energy(debug=False)
 print("Current Energy:",dipolar_MC1.energy)
+t3 = time.time()
 
 #save the images if display option is set
 if (display):
@@ -189,7 +192,7 @@ f.write('# St. temp = {0:4d}\n'.format(start_temp))
 f.write('# End temp = {0:4d}\n'.format(end_temp))
 f.write('# Num. temp = {0:3d}\n'.format(n_temp))
 f.write('#\n')
-f.write('# Temp     Energy     Mag     Sp.Heat    Susc.\n')
+f.write('# Temp     Energy     Mag     Sp.Heat    Susc.  LowAccept  HighAccept   NoAccept\n')
 f.close()
 
 #compute runtime
@@ -198,11 +201,12 @@ start = time.time()
 #Start the sims
 for i in range(n_temp):
     dipolar_MC1.temp = temp_var[i]
-    dipolar_MC1.MC_move()
+    dipolar_MC1.MC_move(verbose=verbose)
     f = open(dir+data_file,"a+")
-    f.write('{0:.3f}, {1:.4e}, {2:.3f}, {3:.4e}, {4:.4e} \n'.format(dipolar_MC1.temp, dipolar_MC1.avgenergy, dipolar_MC1.netmag, dipolar_MC1.sp_heat, dipolar_MC1.suscep))
+    f.write('{0:.3f}, {1:.4e}, {2:.3f}, {3:.4e}, {4:.4e}, {5:5d}, {6:5d}, {7:5d}\n'.format(dipolar_MC1.temp, dipolar_MC1.avgenergy, dipolar_MC1.netmag, dipolar_MC1.sp_heat, dipolar_MC1.suscep, dipolar_MC1.n_lowaccept, dipolar_MC1.n_highaccept, dipolar_MC1.n_noaccept))
     f.close()
-    print(dipolar_MC1.temp, dipolar_MC1.avgenergy, dipolar_MC1.netmag, dipolar_MC1.sp_heat, dipolar_MC1.suscep, dipolar_MC1.n_highaccept, dipolar_MC1.n_lowaccept, dipolar_MC1.n_noaccept)
+    if verbose:
+        print(dipolar_MC1.temp, dipolar_MC1.avgenergy, dipolar_MC1.netmag, dipolar_MC1.sp_heat, dipolar_MC1.suscep, dipolar_MC1.n_highaccept, dipolar_MC1.n_lowaccept, dipolar_MC1.n_noaccept)
     #save the draw lattice data
     if (display):
         

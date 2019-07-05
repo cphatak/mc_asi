@@ -45,6 +45,11 @@ class Dipolar_MC(object):
         #magnetization parameter
         self.magx = np.cos(np.deg2rad(angles))
         self.magy = np.sin(np.deg2rad(angles))
+        #compute and store the distance map.
+        self.distmap = np.zeros([self.n_isl, self.n_isl])
+        for ii in range(self.n_isl):
+            for jj in range(self.n_isl):
+                self.distmap[ii,jj] = np.sqrt((self.centers[0,ii]-self.centers[0,jj])**2 + (self.centers[1,ii]-self.centers[1,jj])**2)
         
         #parameters for storing various values
         self.n_lowaccept = 0
@@ -65,10 +70,11 @@ class Dipolar_MC(object):
     #
     # Calc_Energy function for AFASI
     #
-    def Calc_Energy(self):
-    
+    def Calc_Energy(self, debug=False):
+        
         # Energy variable
         tot_energy = 0
+        count = 0
     
         # loop over each island and compute the neighbors
         for i in range(self.n_isl):
@@ -76,10 +82,9 @@ class Dipolar_MC(object):
                 j = self.nn_inds[i,cnt+1].astype('int')
                 if ((i != j) and (j != self.n_isl)):
                     
-                    si_sj = self.magx[i]*self.magy[j] + self.magx[i]*self.magy[j]
+                    si_sj = self.magx[i]*self.magx[j] + self.magy[i]*self.magy[j]
                     
-                    r_ij = np.sqrt((self.centers[0,i]-self.centers[0,j])**2 +
-                                   (self.centers[1,i]-self.centers[1,j])**2)
+                    r_ij = self.distmap[i,j]
                     
                     si_rij = (self.centers[0,i]-self.centers[0,j])*self.magx[i] 
                     + (self.centers[1,i]-self.centers[1,j])*self.magy[i]
@@ -87,10 +92,17 @@ class Dipolar_MC(object):
                     sj_rji = (self.centers[0,j]-self.centers[0,i])*self.magx[j] 
                     + (self.centers[1,j]-self.centers[1,i])*self.magy[j]
                     
-                    tot_energy += (si_sj/r_ij**3 - (3.0*si_rij*sj_rji)/r_ij**5)
+                    temp = (((si_sj)/r_ij**3) - ((3.0*si_rij*sj_rji)/r_ij**5))
+                    tot_energy +=  temp
+                    if debug:
+                        print(i,j,r_ij,temp,tot_energy)
+                        
+                    count += 1
     
         #return total energy
         #self.energy = tot_energy/2.0
+        if debug:
+            print(count)
         return tot_energy/2.0
 
     #------------------------------------------------------------------
