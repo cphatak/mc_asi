@@ -129,7 +129,7 @@ f.write('# St. temp = {0:4d}\n'.format(start_temp))
 f.write('# End temp = {0:4d}\n'.format(end_temp))
 f.write('# Num. temp = {0:3d}\n'.format(n_temp))
 f.write('#\n')
-f.write('# Temp     Energy     Mag     Sp.Heat    Susc.  LowAccept  HighAccept   NoAccept\n')
+f.write('Temp,     Energy,     Mag,     Sp.Heat,    Susc.,  LowAccept,  HighAccept,   NoAccept\n')
 f.close()
 
 #compute runtime
