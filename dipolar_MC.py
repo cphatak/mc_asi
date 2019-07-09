@@ -11,27 +11,37 @@
 #import necessary modules
 import numpy as np
 import scipy.constants as physcon
+from scipy.spatial import cKDTree as sp_cKDTree
+
 
 class Dipolar_MC(object):
 
     def __init__(self,
-                 centers = 0, #array of centers of each islands
-                 angles = 0, #array of angles for each island
-                 nn_inds = 0, #array of indices for nearest neighbors
-                 max_nn_num = 1, #max. number of neighbors to consider
-                 max_nn_dist = 1, #max. distance for nearest neighbor
-                 verbose=False):
+                 a = 350, # lattice parameter
+                 s = 120, # island separation
+                 nx = 1, # repeat along x
+                 ny = 1, # repeat along y
+                 max_nn_dist = 500, # max. distance of nearest neighbors
+                 max_nn_num = 9, # max. number of nearest neighbors
+                 verbose = False):
         #This function is for initializing the dipolar_MC object
         #The above parameters can be set while initializing and others can
         #be set below.
         
         #parameters for describing lattice
-        self.centers = centers
-        self.angles = angles
-        self.nn_inds = nn_inds
+        self.n_isl = nx * ny * 6
+        self.centers = np.zeros([2,self.n_isl])
+        self.angles = np.zeros([self.n_isl])
         self.max_nn_num = max_nn_num
         self.max_nn_dist = max_nn_dist
         
+        #initialize the lattice
+        res = self.init_afasi_latt(a = a, s = s, nx = nx, ny = ny)
+        
+        #now to use the cKDTree method
+        comb_xy = self.centers.transpose()
+        p_list = list(comb_xy)
+        self.nn_inds = self.do_kdtree(comb_xy, p_list, max_nn_num+1, max_nn_dist)
         #MC simulation parameters - default values
         #they can be changed after definition.
         self.mc_iters = 1000 #total MC iters
@@ -39,12 +49,9 @@ class Dipolar_MC(object):
         self.temp = 10 #dimensionless temperature parameter
         self.mult_fac = physcon.mu_0*1e-9/physcon.k
         
-        #other derived parameters
-        temp, n_isl = centers.shape
-        self.n_isl = n_isl #numner of islands
         #magnetization parameter
-        self.magx = np.cos(np.deg2rad(angles))
-        self.magy = np.sin(np.deg2rad(angles))
+        self.magx = np.cos(np.deg2rad(self.angles))
+        self.magy = np.sin(np.deg2rad(self.angles))
         #compute and store the distance map.
         self.distmap = np.zeros([self.n_isl, self.n_isl])
         for ii in range(self.n_isl):
@@ -63,14 +70,71 @@ class Dipolar_MC(object):
         
         #print output message
         print("Created the Dipolar_MC class.")
-        print("Please run self.Calc_Energy to update self energy")
+        print("Please run self.Latt_Energy to update self energy")
+
+    #------------------------------------------------------------------
+    #
+    # Function using the kdtree algorithm to find the nearest neighbors.
+    # USing the method described here - 
+    # https://stackoverflow.com/questions/10818546/finding-index-of-nearest-point-in-numpy-arrays-of-x-and-y-coordinates
+    #
+    def do_kdtree(self, combined_x_y_arrays, points, max_nn, max_dd):
+        mytree = sp_cKDTree(combined_x_y_arrays)
+        dist, indexes = mytree.query(points, k=max_nn, distance_upper_bound=max_dd)
+        return indexes
+    
+    
+    #------------------------------------------------------------------
+    # Init lattice function for AFASI
+    #
+    # This function will initialize the lattice for given set of lattice parameters
+    # and num of islands along x and y. The output will be an array centers consisting
+    # of positions of each island (x,y), and an array angles with angle of each island
+    # for magnetization, and an array nn_inds consisting of nearest neighbor indices
+    # for each island to be considered for dipolar interactions.
+    #
+    def init_afasi_latt(self, a = 350, s = 120, nx = 1, ny = 1, 
+                        verbose = False, debug = False):
+    
+        # Counter for tracking islands     
+        count = 0
+        for i in range(nx):
+            for j in range(ny):
+                #horizontal islands
+                self.angles[count] = 0
+                self.angles[count+1] = 0
+                self.centers[0,count] = i*2*a - a/2 + j*a
+                self.centers[1,count] = j*np.sqrt(3)*a - a*np.sqrt(3)/4 + s/2
+                self.centers[0,count+1] = i*2*a - a/2 + j*a
+                self.centers[1,count+1] = j*np.sqrt(3)*a - a*np.sqrt(3)/4 - s/2
+                #first set of rotated islands
+                self.angles[count+2] = 120
+                self.angles[count+3] = 120
+                self.centers[0,count+2] = i*2*a + a/2 + j*a + np.sqrt(3)/4*s
+                self.centers[1,count+2] = j*np.sqrt(3)*a - a*np.sqrt(3)/4 + s/4
+                self.centers[0,count+3] = i*2*a + a/2 + j*a - np.sqrt(3)/4*s
+                self.centers[1,count+3] = j*np.sqrt(3)*a - a*np.sqrt(3)/4 - s/4
+                #second set of rotated islands
+                self.angles[count+4] = 60
+                self.angles[count+5] = 60
+                self.centers[0,count+4] = i*2*a + j*a - np.sqrt(3)*s/4
+                self.centers[1,count+4] = j*np.sqrt(3)*a + a*np.sqrt(3)/4 + s/4
+                self.centers[0,count+5] = i*2*a + j*a + np.sqrt(3)*s/4
+                self.centers[1,count+5] = j*np.sqrt(3)*a + a*np.sqrt(3)/4 - s/4
+    
+                #increment count
+                count += 6
+    
+        return 1
 
 
     #------------------------------------------------------------------
     #
-    # Calc_Energy function for AFASI
+    # Latt_Energy function for AFASI
     #
-    def Calc_Energy(self, debug=False):
+    # Computes the total energy of the entire lattice
+    #
+    def Latt_Energy(self, debug=False):
         
         # Energy variable
         tot_energy = 0
@@ -107,6 +171,48 @@ class Dipolar_MC(object):
 
     #------------------------------------------------------------------
     #
+    # Calc_del_Energy function for AFASI
+    #
+    # Computes the energy of a given site in the lattice.
+    #
+    def Calc_del_Energy(self, site, debug=False):
+        
+        # Energy variable
+        site_energy = 0
+        count = 0
+    
+        # compute the neighbors for the given site.
+        i = site
+        for cnt in range(self.max_nn_num-1):
+            j = self.nn_inds[i,cnt+1].astype('int')
+            if ((i != j) and (j != self.n_isl)):
+                
+                si_sj = self.magx[i]*self.magx[j] + self.magy[i]*self.magy[j]
+                
+                r_ij = self.distmap[i,j]
+                
+                si_rij = (self.centers[0,i]-self.centers[0,j])*self.magx[i] 
+                + (self.centers[1,i]-self.centers[1,j])*self.magy[i]
+                
+                sj_rji = (self.centers[0,j]-self.centers[0,i])*self.magx[j] 
+                + (self.centers[1,j]-self.centers[1,i])*self.magy[j]
+                
+                temp = (((si_sj)/r_ij**3) - ((3.0*si_rij*sj_rji)/r_ij**5))
+                site_energy +=  temp
+                if debug:
+                    print(i,j,r_ij,temp,site_energy)
+                    
+                count += 1
+
+        #return total energy
+        #self.energy = tot_energy/2.0
+        if debug:
+            print(count)
+        return site_energy
+
+
+    #------------------------------------------------------------------
+    #
     # MC_move function to actual run the MC simulation.
     #
     # This function will take the input parameters for the MC simulation
@@ -123,13 +229,18 @@ class Dipolar_MC(object):
         avg_mag = 0.0
         avg_mag2 = 0.0
         
+        #reset the counters for accepted values.
+        self.n_lowaccept = 0
+        self.n_highaccept = 0
+        self.n_noaccept = 0
+        
         #get current energy
-        self.energy = self.Calc_Energy()
+        self.energy = self.Latt_Energy()
     
         for nn in range(self.mc_iters):
             if (verbose):
-                if (np.mod(nn,10) == 0):
-                    print(nn)
+                if (np.mod(nn,100) == 0):
+                    print(nn,',',end='')
             for ii in range(self.n_isl):
                 # pick a random site in the lattice.
                 site = np.random.randint(0,self.n_isl)
@@ -140,18 +251,15 @@ class Dipolar_MC(object):
                 self.magx[site] *= (-1)
                 self.magy[site] *= (-1)
     
-                #calculate the energy
-                new_energy = self.Calc_Energy()
-    
-                #difference in energy
-                dE = new_energy - self.energy
+                #calculate the change in energy
+                dE = self.Calc_del_Energy(site)*2.0
                 if (debug):
                     print(dE)
     
                 #check if we should accept this energy or not
                 if (dE < 0):
                     self.n_lowaccept += 1
-                    self.energy = new_energy
+                    self.energy += dE
                     if (debug):
                         print('Low accept')
                 
@@ -164,7 +272,7 @@ class Dipolar_MC(object):
                     
                     if (rnum < part_fun):
                         self.n_highaccept += 1
-                        self.energy = new_energy
+                        self.energy += dE
                         if (debug):
                             print('High accept')
                             
@@ -194,7 +302,8 @@ class Dipolar_MC(object):
         self.suscep = (avg_mag2*cn - avg_mag*avg_mag*cn**2)/self.temp
         
         #print some output
-        print("MC iter complete at temp:",self.temp)
+        if verbose:
+            print("\n MC iter complete at temp:",self.temp)
         return 1
 
 
