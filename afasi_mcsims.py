@@ -13,6 +13,11 @@ import numpy as np
 import datetime
 import time as time
 from scipy.spatial import cKDTree as sp_cKDTree
+import matplotlib as mpl
+#determine if linux
+import platform
+if (platform.system() == 'Linux'):
+    mpl.use('Agg') # for linux operation.
 from matplotlib import pyplot as plt
 from dipolar_MC import Dipolar_MC
 
@@ -89,21 +94,21 @@ def init_afasi_latt(a = 350, # lattice parameter
 #
 # the main function for defining parameters for MC simulations.
 
-jobID = 'run1'
+jobID = 'run5'
 a = 350.0 #lattice parameter
 s = 120.0 #island separation
-nx = 3 #repeat along x
-ny = 3 #repeat along y,
+nx = 5 #repeat along x
+ny = 5 #repeat along y,
 mc_iters = 1000 #number of MC iterations
 eq_iters = 0 #number of equilibriation iterations
-start_temp = 1000 #Start temperature
+start_temp = 2500 #Start temperature
 end_temp = 1 #end temperature
-n_temp = 100 #number of temperature steps
+n_temp = 200 #number of temperature steps
 red_fac = 0.90 #reduction factor
 save_file = 500 #save config data during MC runs
 verbose = True
 display = True
-dir = '/Users/cphatak/work/af_test/run1/'
+dir = '/home/cphatak/af_asi_sims/py_mcsims/run5/'
 
 #Set the next nearest neghbors
 max_nn_num = 9
