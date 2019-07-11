@@ -26,7 +26,7 @@ from dipolar_MC import Dipolar_MC
 #
 # the main function for defining parameters for MC simulations.
 
-jobID = 'run3'
+jobID = 'run1'
 a = 350.0 #lattice parameter
 s = 120.0 #island separation
 nx = 3 #repeat along x
@@ -40,7 +40,7 @@ red_fac = 0.90 #reduction factor
 save_file = 500 #save config data during MC runs
 verbose = True
 display = True
-dir = '/Users/cphatak/ANL_work/artificial_qsl/mc_sims/py/run3/'
+dir = '/Users/cphatak/ANL_work/artificial_qsl/mc_sims/py/test/'
 
 #Set the next nearest neghbors
 max_nn_num = 9
@@ -66,6 +66,7 @@ s1 = time.time()
 
 t2 = time.time()
 dipolar_MC1.energy = dipolar_MC1.Latt_Energy(debug=False)
+old_energy = dipolar_MC1.energy
 print("Current Energy:",dipolar_MC1.energy)
 t3 = time.time()
 
@@ -78,6 +79,32 @@ if (display):
     plt.draw()
     plt.savefig(dir+'initial_state.png',bbox_inches='tight')
     plt.close()
+
+##testing pair flip
+#site = 1
+#pairflip = True
+#dipolar_MC1.magx[site] *= (-1)
+#dipolar_MC1.magy[site] *= (-1)
+#
+#if pairflip:
+#    pair_site = dipolar_MC1.nn_inds[site,1]
+#    dipolar_MC1.magx[pair_site] *= (-1)
+#    dipolar_MC1.magy[pair_site] *= (-1)
+#
+#new_dE = dipolar_MC1.Calc_del_Energy(site, pairflip = pairflip)
+#new_energy = dipolar_MC1.Latt_Energy()
+#print('Difference in Latt energies',new_energy-old_energy)
+#print('Update in energy',new_dE*2)
+#
+#if (display):
+#    
+#    fig1, ax1 = plt.subplots(figsize=(8,8))
+#    ax1.set_title('MC sims pair flip')
+#    qq = ax1.quiver(dipolar_MC1.centers[0,:],dipolar_MC1.centers[1,:],dipolar_MC1.magx,dipolar_MC1.magy,pivot='mid')
+#    plt.draw()
+#    plt.savefig(dir+'pair_flip.png',bbox_inches='tight')
+#    plt.close()
+
 
 #saving the centers and initial mag data
 f1 = open(dir+'MCrun_lattice_coords_'+jobID+'.txt','w+')

@@ -175,35 +175,59 @@ class Dipolar_MC(object):
     #
     # Computes the energy of a given site in the lattice.
     #
-    def Calc_del_Energy(self, site, debug=False):
+    def Calc_del_Energy(self, site, pairflip = False, debug=False):
         
         # Energy variable
         site_energy = 0
         count = 0
     
         # compute the neighbors for the given site.
-        i = site
-        for cnt in range(self.max_nn_num-1):
-            j = self.nn_inds[i,cnt+1].astype('int')
-            if ((i != j) and (j != self.n_isl)):
-                
-                si_sj = self.magx[i]*self.magx[j] + self.magy[i]*self.magy[j]
-                
-                r_ij = self.distmap[i,j]
-                
-                si_rij = (self.centers[0,i]-self.centers[0,j])*self.magx[i] 
-                + (self.centers[1,i]-self.centers[1,j])*self.magy[i]
-                
-                sj_rji = (self.centers[0,j]-self.centers[0,i])*self.magx[j] 
-                + (self.centers[1,j]-self.centers[1,i])*self.magy[j]
-                
-                temp = (((si_sj)/r_ij**3) - ((3.0*si_rij*sj_rji)/r_ij**5))
-                site_energy +=  temp
-                if debug:
-                    print(i,j,r_ij,temp,site_energy)
+        if pairflip:
+            site_indices = [site, self.nn_inds[site,1]]
+            for i in site_indices:                
+                for cnt in range(self.max_nn_num-1):
+                    j = self.nn_inds[i,cnt+2].astype('int')
+                    if ((i != j) and (j != self.n_isl)):
+                        
+                        si_sj = self.magx[i]*self.magx[j] + self.magy[i]*self.magy[j]
+                        
+                        r_ij = self.distmap[i,j]
+                        
+                        si_rij = (self.centers[0,i]-self.centers[0,j])*self.magx[i] 
+                        + (self.centers[1,i]-self.centers[1,j])*self.magy[i]
+                        
+                        sj_rji = (self.centers[0,j]-self.centers[0,i])*self.magx[j] 
+                        + (self.centers[1,j]-self.centers[1,i])*self.magy[j]
+                        
+                        temp = (((si_sj)/r_ij**3) - ((3.0*si_rij*sj_rji)/r_ij**5))
+                        site_energy +=  temp
+                        if debug:
+                            print(i,j,r_ij,temp,site_energy)
+                            
+                        count += 1
+        else:
+            i = site
+            for cnt in range(self.max_nn_num-1):
+                j = self.nn_inds[i,cnt+1].astype('int')
+                if ((i != j) and (j != self.n_isl)):
                     
-                count += 1
-
+                    si_sj = self.magx[i]*self.magx[j] + self.magy[i]*self.magy[j]
+                    
+                    r_ij = self.distmap[i,j]
+                    
+                    si_rij = (self.centers[0,i]-self.centers[0,j])*self.magx[i] 
+                    + (self.centers[1,i]-self.centers[1,j])*self.magy[i]
+                    
+                    sj_rji = (self.centers[0,j]-self.centers[0,i])*self.magx[j] 
+                    + (self.centers[1,j]-self.centers[1,i])*self.magy[j]
+                    
+                    temp = (((si_sj)/r_ij**3) - ((3.0*si_rij*sj_rji)/r_ij**5))
+                    site_energy +=  temp
+                    if debug:
+                        print(i,j,r_ij,temp,site_energy)
+                        
+                    count += 1
+        
         #return total energy
         #self.energy = tot_energy/2.0
         if debug:
@@ -221,7 +245,7 @@ class Dipolar_MC(object):
     # It will also calculate the thermodynamic parameters such as sp. heat,
     # and susceptibility during the MC iters for a given temperature.
     #
-    def MC_move(self,verbose=False,debug=False):
+    def MC_move(self, pairflip = False, verbose=False,debug=False):
     
         #initialize arrays for holding various quantities
         avg_en = 0.0
@@ -250,9 +274,14 @@ class Dipolar_MC(object):
                 #change the magnetization
                 self.magx[site] *= (-1)
                 self.magy[site] *= (-1)
+                
+                if pairflip:
+                    pair_site = self.nn_inds[site,1]
+                    self.magx[pair_site] *= (-1)
+                    self.magy[pair_site] *= (-1)
     
                 #calculate the change in energy
-                dE = self.Calc_del_Energy(site)*2.0
+                dE = self.Calc_del_Energy(site, pairflip = pairflip)*2.0
                 if (debug):
                     print(dE)
     
@@ -280,6 +309,9 @@ class Dipolar_MC(object):
                         #we do not accept the change
                         self.magx[site] *= (-1)
                         self.magy[site] *= (-1)
+                        if pairflip:
+                            self.magx[pair_site] *= (-1)
+                            self.magy[pair_site] *= (-1)
                         self.n_noaccept += 1
                         if (debug):
                             print('No accept')
