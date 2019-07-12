@@ -56,7 +56,8 @@ def run_MC(n_run, #job ID number
            end_temp, #end temperature
            n_temp, #number of temperature steps
            red_fac, #reduction factor
-           save_file, #save config data during MC runs
+           load_file, #load magnetization config data for MC runs
+           file_name, #filename for loading the data.
            verbose,
            display):
     
@@ -76,6 +77,9 @@ def run_MC(n_run, #job ID number
     #Set the next nearest neghbors
     max_nn_num = 9
     max_nn_dist = 1.5 * a
+    
+    #variable for pair flip
+    pairflip = False
 
     #Compute number of islands.
     #6 islands per motif.
@@ -85,9 +89,15 @@ def run_MC(n_run, #job ID number
     #next we initialize the lattice.
     dipolar_MC1 = Dipolar_MC(a = a, s = s, nx = nx, ny = ny, max_nn_dist = max_nn_dist,
                             max_nn_num = max_nn_num)#, centers = centers, angles = angles, nn_inds = nn_inds)
-
-
+    
+    #check if we need to load previous data
+    if load_file:
+        mag_arr = np.genfromtxt(file_name, delimiter=',', skip_header=1)
+        dipolar_MC1.magx = mag_arr[:,0]
+        dipolar_MC1.magy = mag_arr[:,1]
+      
     dipolar_MC1.energy = dipolar_MC1.Latt_Energy(debug=False)
+    current_energy = dipolar_MC1.energy
     print("Current Energy:",dipolar_MC1.energy)
     
     #save the images if display option is set
@@ -141,8 +151,8 @@ def run_MC(n_run, #job ID number
     f.write('# Num isl = {0:4d}\n'.format(n_isl))
     f.write('# MC iters = {0:5d}\n'.format(mc_iters))
     f.write('# EQ_iters = {0:5d}\n'.format(eq_iters))
-    f.write('# St. temp = {0:4d}\n'.format(start_temp))
-    f.write('# End temp = {0:4d}\n'.format(end_temp))
+    f.write('# St. temp = {0:.4e}\n'.format(start_temp))
+    f.write('# End temp = {0:.4e}\n'.format(end_temp))
     f.write('# Num. temp = {0:3d}\n'.format(n_temp))
     f.write('#\n')
     f.write('Temp,     Energy,     Mag,     Sp.Heat,    Susc.,  LowAccept,  HighAccept,   NoAccept\n')
@@ -150,11 +160,14 @@ def run_MC(n_run, #job ID number
 
     #compute runtime
     start = time.time()
+    
+    #break counter
+    break_count = 0
 
     #Start the sims
     for i in range(n_temp):
         dipolar_MC1.temp = temp_var[i]
-        dipolar_MC1.MC_move(verbose=verbose) #optional argument verbose.
+        dipolar_MC1.MC_move(verbose=verbose, pairflip=pairflip) #optional argument verbose.
         f = open(dir+data_file,"a+")
         f.write('{0:.3f}, {1:.4e}, {2:.3f}, {3:.4e}, {4:.4e}, {5:5d}, {6:5d}, {7:5d}\n'.format(dipolar_MC1.temp, dipolar_MC1.avgenergy, dipolar_MC1.netmag, dipolar_MC1.sp_heat, dipolar_MC1.suscep, dipolar_MC1.n_lowaccept, dipolar_MC1.n_highaccept, dipolar_MC1.n_noaccept))
         f.close()
@@ -178,6 +191,20 @@ def run_MC(n_run, #job ID number
 
         f2.close()
         
+        #Now we are checking for activating pair flip.
+        #If the total accepted changes are zero, then we activate it.
+        if ((dipolar_MC1.n_highaccept + dipolar_MC1.n_lowaccept) == 0):
+            pairflip = True
+        
+        #check if the MC simulation has reached final state.
+        if (((dipolar_MC1.n_highaccept+dipolar_MC1.n_lowaccept) == 0) and ((dipolar_MC1.avgenergy - current_energy) == 0)):
+            break_count += 1
+            if (break_count > 5):
+                break
+        
+        #Update current energy
+        current_energy = dipolar_MC1.avgenergy
+        
     end = time.time()
     print('Finished the run in time:',end-start)
 
@@ -191,17 +218,18 @@ def run_MC(n_run, #job ID number
 #
 # LAttice and MC parameters.
 num_runs = 10 #Number of runs in parallel to perform.
-a = 550.0 #Lattice parameter
-s = 250.0 #island separation
-nx = 10 #num of islands along x
-ny = 10 #num of islands along y
+a = 350.0 #Lattice parameter
+s = 120.0 #island separation
+nx = 3 #num of islands along x
+ny = 3 #num of islands along y
 mc_iters = 1000 #number of MC iterations
 eq_iters = 0 #number of equilibriation iterations
-start_temp = 2000 #Start temperature
-end_temp = 1 #end temperature
+start_temp = 2000.0 #Start temperature
+end_temp = 1.0 #end temperature
 n_temp = 200 #number of temperature steps
 red_fac = 0.90 #reduction factor
-save_file = 500 #save config data during MC runs
+load_file = True #load magnetic config data during MC runs
+file_name = "MCrun_mag_run0_199.txt"
 verbose = True
 display = True
 
@@ -224,7 +252,8 @@ results = [pool.apply_async(run_MC, args=(x, #job ID
                                           end_temp, #end temperature
                                           n_temp, #number of temperature steps
                                           red_fac, #reduction factor
-                                          save_file, #save config data during MC runs
+                                          load_file, #load magnetic config data for MC runs
+                                          file_name, #file name for reading the data from
                                           verbose,
                                           display)) for x in range(nproc)]
 
