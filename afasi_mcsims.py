@@ -59,6 +59,12 @@ nn_inds = np.zeros([n_isl,max_nn_num])
 dipolar_MC1 = Dipolar_MC(a = a, s = s, nx = nx, ny = ny, max_nn_dist = max_nn_dist,
                           max_nn_num = max_nn_num)#, centers = centers, angles = angles, nn_inds = nn_inds)
 
+#fname = "/Users/cphatak/ANL_work/artificial_qsl/mc_sims/py/latt_3x3_1/run0/MCrun_mag_run0_199.txt"
+#mag_arr = np.genfromtxt(fname, delimiter=',', skip_header=1)
+#dipolar_MC1.magx = mag_arr[:,0]
+#dipolar_MC1.magy = mag_arr[:,1]
+#
+
 #next we initialize the Dipolar_MC Class for MC sims
 s1 = time.time()
 #dipolar_MC1 = Dipolar_MC(centers = centers, angles = angles, nn_inds = nn_inds,
