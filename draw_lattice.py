@@ -116,13 +116,12 @@ def draw_lattice(microscope,
         #compute the ephase shift
         latt_ephi = microscope.sigma * latt_V0 * thk * latt * del_px
         #back ground phase
-        mem_phi = microscope.sigma * mem_V0 * mem_thk * np.random.uniform(
-                low = -np.pi/32, high = np.pi/32, size=latt.shape)
+        mem_phi = microscope.sigma * mem_V0 * mem_thk #* np.random.uniform(low = -np.pi/32, high = np.pi/32, size=latt.shape)
         #total phase 
-        Tphi = mag_phi + latt_ephi #+ mem_phi
+        Tphi = mag_phi + latt_ephi + mem_phi
         
         #amplitude
-        Amp = np.exp((-np.ones(latt.shape) * mem_thk / mem_xip0) - (thk / latt_xip0 * latt))
+        Amp = np.exp((-np.ones(latt.shape) * mem_thk / mem_xip0) - (thk * del_px / latt_xip0 * latt))
         #Object Wave
         ObjWave = Amp * (np.cos(Tphi) + 1j * np.sin(Tphi))
         
