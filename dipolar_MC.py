@@ -342,7 +342,7 @@ class Dipolar_MC(object):
                 
                 #Save the file if needed
                 if (np.mod(nn,save_file) == 0):
-                    f1 = open(self.dir+'mag_data_'+self.jobID+'_temp_'+str(self.temp)+'_MC_iter_'+str(nn)+'.txt')
+                    f1 = open(self.dir+'mag_data_'+self.jobID+'_temp_'+str(self.temp)+'_MC_iter_'+str(nn)+'.txt','w+')
                     f1.write('# Num islands {0:3d} \n'.format(self.n_isl))
                     for i in range(self.n_isl):
                         f1.write('{0:.3f}, {1:.3f} \n'.format(self.magx[i],self.magy[i]))
