@@ -37,7 +37,7 @@ start_temp = 2000 #Start temperature
 end_temp = 1 #end temperature
 n_temp = 200 #number of temperature steps
 red_fac = 0.90 #reduction factor
-save_file = 500 #save config data during MC runs
+save_file = 10 #save config data during MC runs
 verbose = True
 display = True
 dir = '/Users/cphatak/ANL_work/artificial_qsl/mc_sims/py/test/'
@@ -57,7 +57,7 @@ nn_inds = np.zeros([n_isl,max_nn_num])
 
 #next we initialize the lattice.
 dipolar_MC1 = Dipolar_MC(a = a, s = s, nx = nx, ny = ny, max_nn_dist = max_nn_dist,
-                          max_nn_num = max_nn_num)#, centers = centers, angles = angles, nn_inds = nn_inds)
+                          max_nn_num = max_nn_num, latt_type='rectangle', dir = dir, jobID = jobID)#, centers = centers, angles = angles, nn_inds = nn_inds)
 
 #fname = "/Users/cphatak/ANL_work/artificial_qsl/mc_sims/py/latt_3x3_1/run0/MCrun_mag_run0_199.txt"
 #mag_arr = np.genfromtxt(fname, delimiter=',', skip_header=1)

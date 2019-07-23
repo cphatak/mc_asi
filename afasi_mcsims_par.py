@@ -88,7 +88,7 @@ def run_MC(n_run, #job ID number
 
     #next we initialize the lattice.
     dipolar_MC1 = Dipolar_MC(a = a, s = s, nx = nx, ny = ny, max_nn_dist = max_nn_dist,
-                            max_nn_num = max_nn_num)#, centers = centers, angles = angles, nn_inds = nn_inds)
+                            max_nn_num = max_nn_num, dir = dir, jobID = jobID, latt_type='rectangle')#, centers = centers, angles = angles, nn_inds = nn_inds)
     
     #check if we need to load previous data
     if load_file:
@@ -167,7 +167,7 @@ def run_MC(n_run, #job ID number
     #Start the sims
     for i in range(n_temp):
         dipolar_MC1.temp = temp_var[i]
-        dipolar_MC1.MC_move(verbose=verbose, pairflip=pairflip) #optional argument verbose.
+        dipolar_MC1.MC_move(verbose=verbose, pairflip=pairflip, save_file=10) #optional argument verbose.
         f = open(dir+data_file,"a+")
         f.write('{0:.3f}, {1:.4e}, {2:.3f}, {3:.4e}, {4:.4e}, {5:5d}, {6:5d}, {7:5d}\n'.format(dipolar_MC1.temp, dipolar_MC1.avgenergy, dipolar_MC1.netmag, dipolar_MC1.sp_heat, dipolar_MC1.suscep, dipolar_MC1.n_lowaccept, dipolar_MC1.n_highaccept, dipolar_MC1.n_noaccept))
         f.close()

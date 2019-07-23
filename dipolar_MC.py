@@ -23,6 +23,9 @@ class Dipolar_MC(object):
                  ny = 1, # repeat along y
                  max_nn_dist = 500, # max. distance of nearest neighbors
                  max_nn_num = 9, # max. number of nearest neighbors
+                 latt_type = 'slanted', #slated or rectangular lattice.
+                 dir = '/', #folder name
+                 jobID = 'run1', #job ID
                  verbose = False):
         #This function is for initializing the dipolar_MC object
         #The above parameters can be set while initializing and others can
@@ -35,8 +38,12 @@ class Dipolar_MC(object):
         self.max_nn_num = max_nn_num
         self.max_nn_dist = max_nn_dist
         
+        #folder location.
+        self.dir = dir
+        self.jobID = jobID
+        
         #initialize the lattice
-        res = self.init_afasi_latt(a = a, s = s, nx = nx, ny = ny)
+        res = self.init_afasi_latt(a = a, s = s, nx = nx, ny = ny, latt_type = latt_type)
         
         #now to use the cKDTree method
         comb_xy = self.centers.transpose()
@@ -94,12 +101,19 @@ class Dipolar_MC(object):
     # for each island to be considered for dipolar interactions.
     #
     def init_afasi_latt(self, a = 350, s = 120, nx = 1, ny = 1, 
+                        latt_type= 'slanted',
                         verbose = False, debug = False):
     
         # Counter for tracking islands     
         count = 0
         for i in range(nx):
             for j in range(ny):
+                if (latt_type == 'rectangle'):
+                    if (np.mod(j,2) != 0):
+                        i -= 1
+                
+                if debug:
+                    print(i,j)
                 #horizontal islands
                 self.angles[count] = 0
                 self.angles[count+1] = 0
@@ -245,7 +259,8 @@ class Dipolar_MC(object):
     # It will also calculate the thermodynamic parameters such as sp. heat,
     # and susceptibility during the MC iters for a given temperature.
     #
-    def MC_move(self, pairflip = False, verbose=False,debug=False):
+    def MC_move(self, pairflip = False, save_file = 1000,
+                verbose=False,debug=False):
     
         #initialize arrays for holding various quantities
         avg_en = 0.0
@@ -324,6 +339,15 @@ class Dipolar_MC(object):
                     avg_en2 += self.energy**2
                     avg_mag += self.netmag
                     avg_mag2 += self.netmag**2
+                
+                #Save the file if needed
+                if (np.mod(nn,save_file) == 0):
+                    f1 = open(self.dir+'mag_data_'+self.jobID+'_temp_'+str(self.temp)+'_MC_iter_'+str(nn)+'.txt')
+                    f1.write('# Num islands {0:3d} \n'.format(self.n_isl))
+                    for i in range(self.n_isl):
+                        f1.write('{0:.3f}, {1:.3f} \n'.format(self.magx[i],self.magy[i]))
+
+                    f1.close()
                 
         #we are out of the MC loop.
         #collect all the data.

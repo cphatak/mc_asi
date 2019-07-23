@@ -15,8 +15,8 @@ from skimage import io as sk_io
 from microscopes import Microscope
  
 def draw_lattice(microscope,
-                 cen_fname = 'MCrun_lattice_coords_run1.txt', #centers
-                 mag_fname = 'MCrun_mag_initial_run1.txt', #mag file name
+                 cen_fname = 'MCrun_lattice_coords_run1', #centers
+                 mag_fname = 'MCrun_mag_initial_run1', #mag file name
                  dim = 400, #size of images
                  del_px = 10, #pixel resolution for images. (nm/px)
                  Lx = 300, #lenght of island along horizontal (nm)
@@ -131,7 +131,6 @@ def draw_lattice(microscope,
         d2=dim/2
         line = np.arange(dim)-float(d2)
         [X,Y] = np.meshgrid(line,line)
-        th = np.arctan2(Y,X)
         qq = np.sqrt(X**2 + Y**2) / float(dim)
         
         #simulate images
