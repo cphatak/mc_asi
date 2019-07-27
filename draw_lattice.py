@@ -8,11 +8,9 @@ Created on Sun Jul 21 12:46:22 2019
 
 import numpy as np
 from matplotlib import pyplot as plt
-from skimage import draw as sk_draw
 from skimage.transform import rotate as sk_rot
 from comp_phase import mansPhi
 from skimage import io as sk_io
-from microscopes import Microscope
  
 def draw_lattice(microscope,
                  cen_fname = 'MCrun_lattice_coords_run1', #centers
@@ -40,10 +38,9 @@ def draw_lattice(microscope,
     #some pre-dfined parameters
     #microscope defocus
     def_val = 1000000.0
-
-    #offset values for shifing the islands of lattice
-    offx = 1000/del_px#im_sz/2#/del_px
-    offy = 800/del_px
+    
+    #lattice offset buffer
+    buff = -80
     
     #material parameters for phase and amp. computation.
     #lattice values
@@ -67,43 +64,52 @@ def draw_lattice(microscope,
     n_isl, coord = centers.shape
     
     #convert to pixel coordinates
-    new_cens = centers/del_px
-    max_coord = np.amax(new_cens)
+    new_cen = centers/del_px
+    max_coord = np.amax(new_cen)
     
     im_sz = dim
     if max_coord >= im_sz:
         im_sz *= 2
     
-    isl_img = np.zeros([im_sz,im_sz])
+    dim = im_sz
+    d2 = dim/2
+    line = np.arange(dim)-d2
+    X,Y = np.meshgrid(line,line)
     
     #create a single horizontal island.
+    isl_img = np.zeros([im_sz,im_sz])
     Lx /= del_px
     Ly /= del_px
     thk/= del_px
     
-    #create the rectangle
-    r_start = (im_sz/2-(Ly)/2,im_sz/2-(Lx-Ly)/2)
-    rr,cc = sk_draw.rectangle(r_start, extent = (Ly,(Lx-Ly)))
-    #rr,cc = sk_draw.rectangle(r_start, extent = (Ly,Lx))
-    isl_img[rr.astype('int'),cc.astype('int')] = 1
-    
-    #add the circles
-    rr,cc = sk_draw.circle(im_sz/2,im_sz/2-(Lx-Ly)/2,Ly/2)
-    isl_img[rr.astype('int'),cc.astype('int')] = 1
-    rr,cc = sk_draw.circle(im_sz/2,im_sz/2+(Lx-Ly)/2,Ly/2)
-    isl_img[rr.astype('int'),cc.astype('int')] = 1
+    #first the rectangular part
+    isl_img[int(d2-Ly/2):int(d2+Ly/2-1),int(d2-(Lx-Ly)/2):int(d2+(Lx-Ly)/2-1)] = 1.0
+
+    #then the circle part
+    cc = np.sqrt(X**2 + Y**2)
+    temp = np.zeros([dim,dim])
+    temp[np.where(cc <= Ly/2)] = 1.0
+    cc = np.roll(np.roll(temp,int(-(Lx-Ly)/2),axis=1),-1,axis=0)
+    isl_img[np.where(cc == 1.0)] = 1.0
+    cc = np.roll(np.roll(temp,int((Lx-Ly)/2),axis=1),-1,axis=0)
+    isl_img[np.where(cc == 1.0)] = 1.0
     
     
     #arrays for holding variables
     latt = np.zeros([im_sz,im_sz])
     magx = np.zeros([im_sz,im_sz])
     magy = np.zeros([im_sz,im_sz])
+
+    #offsets for lattice
+    xoff = d2-np.abs(np.amin(new_cen[:,1])) + buff
+    yoff = d2-np.abs(np.amin(new_cen[:,0])) + buff
     
+
     for i in range(n_isl):
         ang = np.rad2deg(np.arctan2(mag[i,1],mag[i,0]))
         temp = sk_rot(isl_img,-ang)
-        xs = new_cens[i,0]-offx
-        ys = new_cens[i,1]-offy
+        xs = new_cen[i,0]-xoff
+        ys = new_cen[i,1]-yoff
         temp2 = np.roll(np.roll(temp,ys.astype('int'),axis=0),xs.astype('int'),axis=1)
         magx += temp2*mag[i,0]
         magy += temp2*mag[i,1]
@@ -145,4 +151,7 @@ def draw_lattice(microscope,
         sk_io.imsave(mag_fname+'_Im_In.tiff',full_im_in.astype('float32'))
         sk_io.imsave(mag_fname+'_Im_Un.tiff',full_im_un.astype('float32'))
         sk_io.imsave(mag_fname+'_Im_Ov.tiff',full_im_ov.astype('float32'))
+
+    return 1
+
     
