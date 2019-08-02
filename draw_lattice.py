@@ -21,6 +21,9 @@ def draw_lattice(microscope,
                  Ly = 100, #length of island alog vertical (nm)
                  thk = 10, #thickness for phase computations
                  save_tfs = True, #save mag phase, ephase and TFs files
+                 defocus = 1000000.0, #defocus for TFS images.
+                 n_tfs = 3, #number of defocus images.
+                 random_phase = False, #bckground random phase.
                  save_lattice = True):#save the lattice image with mag indicatio
 
 #dir = '/Users/cphatak/work/af_test/run1/'
@@ -37,7 +40,7 @@ def draw_lattice(microscope,
 
     #some pre-dfined parameters
     #microscope defocus
-    def_val = 1000000.0
+    def_val = defocus
     
     #lattice offset buffer
     buff = -80
@@ -122,7 +125,11 @@ def draw_lattice(microscope,
         #compute the ephase shift
         latt_ephi = microscope.sigma * latt_V0 * thk * latt * del_px
         #back ground phase
-        mem_phi = microscope.sigma * mem_V0 * mem_thk #* np.random.uniform(low = -np.pi/32, high = np.pi/32, size=latt.shape)
+        if random_phase:
+            mem_phi = microscope.sigma * mem_V0 * mem_thk * np.random.uniform(low = -np.pi/32, high = np.pi/32, size=latt.shape)
+        else:
+            mem_phi = microscope.sigma * mem_V0 * mem_thk
+
         #total phase 
         Tphi = mag_phi + latt_ephi + mem_phi
         
@@ -139,6 +146,9 @@ def draw_lattice(microscope,
         qq = np.sqrt(X**2 + Y**2) / float(dim)
         
         #simulate images
+        #im_stack = np.zeros([dim,dim,n_tfs])
+
+        #for nnttfs in range(n_tfs):
         microscope.defocus = 0.0
         full_im_in = microscope.getImage(ObjWave,qq,del_px)
         microscope.defocus = -def_val
