@@ -21,8 +21,9 @@ def draw_lattice(microscope,
                  Ly = 100, #length of island alog vertical (nm)
                  thk = 10, #thickness for phase computations
                  save_tfs = True, #save mag phase, ephase and TFs files
-                 defocus = 1000000.0, #defocus for TFS images.
+                 defocus_step = 1000000.0, #defocus for TFS images.
                  n_tfs = 3, #number of defocus images.
+                 s_type = 'quadratic', #type of defocus series (linear or quadratic)
                  random_phase = False, #bckground random phase.
                  save_lattice = True):#save the lattice image with mag indicatio
 
@@ -39,8 +40,6 @@ def draw_lattice(microscope,
 #save_lattice = True#save the lattice image with mag indicatio    
 
     #some pre-dfined parameters
-    #microscope defocus
-    def_val = defocus
     
     #lattice offset buffer
     buff = -80
@@ -126,12 +125,15 @@ def draw_lattice(microscope,
         latt_ephi = microscope.sigma * latt_V0 * thk * latt * del_px
         #back ground phase
         if random_phase:
-            mem_phi = microscope.sigma * mem_V0 * mem_thk * np.random.uniform(low = -np.pi/32, high = np.pi/32, size=latt.shape)
+            mem_phi = microscope.sigma * mem_V0 * mem_thk * np.random.uniform(low = -np.pi/64, high = np.pi/64, size=latt.shape)
         else:
             mem_phi = microscope.sigma * mem_V0 * mem_thk
 
         #total phase 
         Tphi = mag_phi + latt_ephi + mem_phi
+
+        #Save phase image
+        sk_io.imsave(mag_fname+'_Phi.tiff',Tphi.astype('float32'))
         
         #amplitude
         Amp = np.exp((-np.ones(latt.shape) * mem_thk / mem_xip0) - (thk * del_px / latt_xip0 * latt))
@@ -147,20 +149,22 @@ def draw_lattice(microscope,
         
         #simulate images
         #im_stack = np.zeros([dim,dim,n_tfs])
+        #calculate all the defocus values
+        if (s_type == 'quadratic'):
+        
+            aa = np.arange(-(n_tfs-1)/2,(n_tfs-1)/2+1)
+            def_vals = (2**(np.abs(aa)-1))*np.sign(aa) * defocus_step
+        
+        else:
+            aa = np.arange(-(n_tfs-1)/2,(n_tfs-1)/2+1)
+            def_vals = aa * defocus_step
 
-        #for nnttfs in range(n_tfs):
-        microscope.defocus = 0.0
-        full_im_in = microscope.getImage(ObjWave,qq,del_px)
-        microscope.defocus = -def_val
-        full_im_un = microscope.getImage(ObjWave,qq,del_px)
-        microscope.defocus = def_val
-        full_im_ov = microscope.getImage(ObjWave,qq,del_px)
-        
-        
-        sk_io.imsave(mag_fname+'_Phi.tiff',Tphi.astype('float32'))
-        sk_io.imsave(mag_fname+'_Im_In.tiff',full_im_in.astype('float32'))
-        sk_io.imsave(mag_fname+'_Im_Un.tiff',full_im_un.astype('float32'))
-        sk_io.imsave(mag_fname+'_Im_Ov.tiff',full_im_ov.astype('float32'))
+        for nntfs in range(n_tfs):
+            microscope.defocus = def_vals[nntfs]
+            full_im = microscope.getImage(ObjWave,qq,del_px)
+            #im_stack[:,:,nntfs] = full_im_in
+            # save image
+            sk_io.imsave(mag_fname+'_def_'+str(def_vals[nntfs])+'.tiff',full_im.astype('float32'))
 
     return 1
 
