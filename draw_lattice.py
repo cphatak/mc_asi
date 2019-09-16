@@ -137,6 +137,10 @@ def draw_lattice(microscope,
         
         #amplitude
         Amp = np.exp((-np.ones(latt.shape) * mem_thk / mem_xip0) - (thk * del_px / latt_xip0 * latt))
+
+        #Save amp image
+        sk_io.imsave(mag_fname+'_Amp.tiff',Amp.astype('float32'))
+
         #Object Wave
         ObjWave = Amp * (np.cos(Tphi) + 1j * np.sin(Tphi))
         
