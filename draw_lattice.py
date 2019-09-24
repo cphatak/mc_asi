@@ -7,7 +7,7 @@ Created on Sun Jul 21 12:46:22 2019
 """
 
 import numpy as np
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
 from skimage.transform import rotate as sk_rot
 from comp_phase import mansPhi
 from skimage import io as sk_io
