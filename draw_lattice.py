@@ -25,7 +25,10 @@ def draw_lattice(microscope,
                  n_tfs = 3, #number of defocus images.
                  s_type = 'quadratic', #type of defocus series (linear or quadratic)
                  random_phase = False, #bckground random phase.
-                 save_lattice = True):#save the lattice image with mag indicatio
+                 save_lattice = True, #save the lattice image with mag indication
+                 buff_offset = 100, #offset for lattice to fit in the view.
+                 resize_im = False): #Resizing of FOV to fit the lattice.
+
 
 #dir = '/Users/cphatak/work/af_test/run1/'
 #microscope = Microscope(Cs = 200.0e3, theta_c = 0.02e-3, def_spr = 80.0)
@@ -70,8 +73,9 @@ def draw_lattice(microscope,
     max_coord = np.amax(new_cen)
     
     im_sz = dim
-    if max_coord >= im_sz:
-        im_sz *= 2
+    if resize_im:
+        if max_coord >= im_sz:
+            im_sz *= 2
     
     dim = im_sz
     d2 = dim/2
