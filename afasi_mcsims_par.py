@@ -191,9 +191,12 @@ def run_MC(n_run, #job ID number
 
         f2.close()
         
+        #Update current energy
+        current_energy = dipolar_MC1.avgenergy
+        
         #Now we are checking for activating pair flip.
-        #If the total accepted changes are zero, then we activate it.
-        if ((dipolar_MC1.n_highaccept + dipolar_MC1.n_lowaccept) == 0):
+        #If the total accepted changes are zero and net magnetization is zero, then we activate it.
+        if (((dipolar_MC1.n_highaccept + dipolar_MC1.n_lowaccept) == 0) and (dipolar_MC1.netmag == 0)):
             pairflip = True
             print('Activated Pair Flip at temp {0:.4e}'.format(dipolar_MC1.temp))
         
@@ -203,8 +206,6 @@ def run_MC(n_run, #job ID number
             if (break_count > 5):
                 break
         
-        #Update current energy
-        current_energy = dipolar_MC1.avgenergy
         
     end = time.time()
     print('Finished the run in time:',end-start)

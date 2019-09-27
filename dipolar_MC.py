@@ -26,6 +26,7 @@ class Dipolar_MC(object):
                  latt_type = 'slanted', #slated or rectangular lattice.
                  dir = '/', #folder name
                  jobID = 'run1', #job ID
+                 init_random = True, #initial magnetization of the lattice
                  verbose = False):
         #This function is for initializing the dipolar_MC object
         #The above parameters can be set while initializing and others can
@@ -53,12 +54,26 @@ class Dipolar_MC(object):
         #they can be changed after definition.
         self.mc_iters = 1000 #total MC iters
         self.eq_iters = 0 #number of iters for equilbriation before computing
-        self.temp = 10 #dimensionless temperature parameter
-        self.mult_fac = physcon.mu_0*1e-9/physcon.k
+
+        #We will calculate the energy normalized by D where D = mu_0*mu^2/4/pi
+        #The temperature scale is then in units of D/k_b. 
+        self.temp = 1
+        #self.mult_fac = physcon.mu_0*1e-9/physcon.k
+        self.mult_fac = 1.0 # multiplication factor for partition function calculation. 
         
         #magnetization parameter
         self.magx = np.cos(np.deg2rad(self.angles))
         self.magy = np.sin(np.deg2rad(self.angles))
+
+        #randomize the magnetization
+        if init_random:
+            for nn in range(self.n_isl):
+                mult = 1
+                if (np.random.random() <= 0.5):
+                    mult = -1
+                self.magx[nn] *= mult
+                self.magy[nn] *= mult
+        
         #compute and store the distance map.
         self.distmap = np.zeros([self.n_isl, self.n_isl])
         for ii in range(self.n_isl):
