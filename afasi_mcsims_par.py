@@ -88,7 +88,8 @@ def run_MC(n_run, #job ID number
 
     #next we initialize the lattice.
     dipolar_MC1 = Dipolar_MC(a = a, s = s, nx = nx, ny = ny, max_nn_dist = max_nn_dist,
-                            max_nn_num = max_nn_num, dir = dir, jobID = jobID, latt_type='rectangle')#, centers = centers, angles = angles, nn_inds = nn_inds)
+                            max_nn_num = max_nn_num, dir = dir, jobID = jobID, 
+                            latt_type='rectangle', init_random = True)#, centers = centers, angles = angles, nn_inds = nn_inds)
     
     #check if we need to load previous data
     if load_file:
