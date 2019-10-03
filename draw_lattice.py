@@ -45,7 +45,7 @@ def draw_lattice(microscope,
     #some pre-dfined parameters
     
     #lattice offset buffer
-    buff = -80
+    buff = buff_offset
     
     #material parameters for phase and amp. computation.
     #lattice values
@@ -69,24 +69,26 @@ def draw_lattice(microscope,
     n_isl, coord = centers.shape
     
     #convert to pixel coordinates
+    Lx /= del_px
+    Ly /= del_px
+    thk/= del_px
     new_cen = centers/del_px
     max_coord = np.amax(new_cen)
     
+    #check the size of image.
     im_sz = dim
     if resize_im:
         if max_coord >= im_sz:
             im_sz *= 2
     
-    dim = im_sz
+    #create single horizontal island
+    dim = np.int(Lx*2)
     d2 = dim/2
     line = np.arange(dim)-d2
     X,Y = np.meshgrid(line,line)
     
     #create a single horizontal island.
-    isl_img = np.zeros([im_sz,im_sz])
-    Lx /= del_px
-    Ly /= del_px
-    thk/= del_px
+    isl_img = np.zeros([dim,dim])
     
     #first the rectangular part
     isl_img[int(d2-Ly/2):int(d2+Ly/2-1),int(d2-(Lx-Ly)/2):int(d2+(Lx-Ly)/2-1)] = 1.0
@@ -107,19 +109,25 @@ def draw_lattice(microscope,
     magy = np.zeros([im_sz,im_sz])
 
     #offsets for lattice
-    xoff = d2-np.abs(np.amin(new_cen[:,1])) + buff
-    yoff = d2-np.abs(np.amin(new_cen[:,0])) + buff
+    #xoff = d2-np.abs(np.amin(new_cen[:,1])) + buff
+    #yoff = d2-np.abs(np.amin(new_cen[:,0])) + buff
+    xoff = buff
+    yoff = buff
     
 
     for i in range(n_isl):
         ang = np.rad2deg(np.arctan2(mag[i,1],mag[i,0]))
         temp = sk_rot(isl_img,-ang)
-        xs = new_cen[i,0]-xoff
-        ys = new_cen[i,1]-yoff
-        temp2 = np.roll(np.roll(temp,ys.astype('int'),axis=0),xs.astype('int'),axis=1)
-        magx += temp2*mag[i,0]
-        magy += temp2*mag[i,1]
-        latt += temp2
+        xs = im_sz//2+new_cen[i,0]-xoff-d2
+        xe = im_sz//2+new_cen[i,0]-xoff+d2
+        ys = im_sz//2+new_cen[i,1]-yoff-d2
+        ye = im_sz//2+new_cen[i,1]-yoff+d2
+        #temp2 = np.roll(np.roll(temp,ys.astype('int'),axis=0),xs.astype('int'),axis=1)
+        latt[int(ys):int(ye),int(xs):int(xe)] += temp
+        magx[int(ys):int(ye),int(xs):int(xe)] += temp*mag[i,0]
+        magy[int(ys):int(ye),int(xs):int(xe)] += temp*mag[i,1]
+        #magx += temp2*mag[i,0]
+        #magy += temp2*mag[i,1]
         
     if save_tfs:
         
@@ -150,6 +158,7 @@ def draw_lattice(microscope,
         
         #coordinates for image simulations.
         #Dimensions and coordinates
+        dim = im_sz
         d2=dim/2
         line = np.arange(dim)-float(d2)
         [X,Y] = np.meshgrid(line,line)
