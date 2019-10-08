@@ -125,6 +125,8 @@ def draw_lattice(microscope,
         #temp2 = np.roll(np.roll(temp,ys.astype('int'),axis=0),xs.astype('int'),axis=1)
         if (xe > im_sz or ye > im_sz):
             continue
+        if (xs < 0 or ys < 0):
+            continue
         latt[int(ys):int(ye),int(xs):int(xe)] += temp[0:int(ye-ys)+1,0:int(xe-xs)+1]
         magx[int(ys):int(ye),int(xs):int(xe)] += temp[0:int(ye-ys)+1,0:int(xe-xs)+1]*mag[i,0]
         magy[int(ys):int(ye),int(xs):int(xe)] += temp[0:int(ye-ys)+1,0:int(xe-xs)+1]*mag[i,1]
