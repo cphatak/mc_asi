@@ -50,7 +50,7 @@ def draw_lattice(microscope,
     #material parameters for phase and amp. computation.
     #lattice values
     latt_V0 = 20.0 #V
-    latt_xip0 = 200 #nm
+    latt_xip0 = 100 #nm
     #Magnetization parameters
     b0 = 1.0e4 #Gauss
     phi0 = 20.7e6 #Gauss.nm^2
