@@ -57,6 +57,7 @@ def run_MC(n_run, #job ID number
            n_temp, #number of temperature steps
            red_fac, #reduction factor - 'Linear' or 'Geometric'
            load_file, #load magnetization config data for MC runs
+           save_file, #to save files in intermediate MC steps. every N steps.
            file_name, #filename for loading the data.
            verbose,
            display):
@@ -172,7 +173,7 @@ def run_MC(n_run, #job ID number
     #Start the sims
     for i in range(n_temp):
         dipolar_MC1.temp = temp_var[i]
-        dipolar_MC1.MC_move(verbose=verbose, pairflip=pairflip, save_file=10) #optional argument verbose.
+        dipolar_MC1.MC_move(verbose=verbose, pairflip=pairflip, save_file=save_file) #optional argument verbose.
         f = open(dir+data_file,"a+")
         f.write('{0:.4e}, {1:.4e}, {2:.3f}, {3:.4e}, {4:.4e}, {5:5d}, {6:5d}, {7:5d}\n'.format(dipolar_MC1.temp, dipolar_MC1.avgenergy, dipolar_MC1.netmag, dipolar_MC1.sp_heat, dipolar_MC1.suscep, dipolar_MC1.n_lowaccept, dipolar_MC1.n_highaccept, dipolar_MC1.n_noaccept))
         f.close()
@@ -220,53 +221,5 @@ def run_MC(n_run, #job ID number
 
 
 #------------------------------------------------------------------
-#
-# Running the parallel version.
-#
-# LAttice and MC parameters.
-num_runs = 10 #Number of runs in parallel to perform.
-a = 350.0 #Lattice parameter
-s = 120.0 #island separation
-nx = 3 #num of islands along x
-ny = 3 #num of islands along y
-mc_iters = 1000 #number of MC iterations
-eq_iters = 0 #number of equilibriation iterations
-start_temp = 2000.0 #Start temperature
-end_temp = 1.0 #end temperature
-n_temp = 200 #number of temperature steps
-red_fac = 'Linear' #reduction factor - 'Linear' or 'Geometric'
-load_file = True #load magnetic config data during MC runs
-file_name = "MCrun_mag_run0_199.txt"
-verbose = True
-display = True
-
-#get system information
-print_sysinfo()
-
-#start multiprocessing computation
-nproc = np.minimum(num_runs, mp.cpu_count())
-print('Using {0:2d} processes.'.format(int(nproc)))
-st_time = time.time()
-pool = mp.Pool(processes = nproc)
-results = [pool.apply_async(run_MC, args=(x, #job ID
-                                          a, #Lattice parameter
-                                          s, #island separation
-                                          nx, #num of islands along x
-                                          ny, #num of islands along y
-                                          mc_iters, #number of MC iterations
-                                          eq_iters, #number of equilibriation iterations
-                                          start_temp, #Start temperature
-                                          end_temp, #end temperature
-                                          n_temp, #number of temperature steps
-                                          red_fac, #reduction factor
-                                          load_file, #load magnetic config data for MC runs
-                                          file_name, #file name for reading the data from
-                                          verbose,
-                                          display)) for x in range(nproc)]
-
-results = [p.get() for p in results]
-print('Total time:',time.time()-st_time)
-print('Total runs completed:',nproc)
-
     
     
