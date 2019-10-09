@@ -55,7 +55,7 @@ def run_MC(n_run, #job ID number
            start_temp, #Start temperature
            end_temp, #end temperature
            n_temp, #number of temperature steps
-           red_fac, #reduction factor
+           red_fac, #reduction factor - 'Linear' or 'Geometric'
            load_file, #load magnetization config data for MC runs
            file_name, #filename for loading the data.
            verbose,
@@ -134,7 +134,11 @@ def run_MC(n_run, #job ID number
     dipolar_MC1.eq_iters = eq_iters
 
     #compute total number of temperature steps
-    temp_var = np.linspace(start_temp,end_temp,n_temp)
+    if (red_fac == 'Linear'):
+        temp_var = np.linspace(start_temp,end_temp,n_temp)
+
+    if (red_fac == 'Geometric'):
+        temp_var = np.geomspace(start_temp,end_temp,n_temp,endpoint=True)
 
     ##open data file to save the runtime data
     data_file = "Dipolar_MC1_"+jobID+".txt"
@@ -230,7 +234,7 @@ eq_iters = 0 #number of equilibriation iterations
 start_temp = 2000.0 #Start temperature
 end_temp = 1.0 #end temperature
 n_temp = 200 #number of temperature steps
-red_fac = 0.90 #reduction factor
+red_fac = 'Linear' #reduction factor - 'Linear' or 'Geometric'
 load_file = True #load magnetic config data during MC runs
 file_name = "MCrun_mag_run0_199.txt"
 verbose = True
