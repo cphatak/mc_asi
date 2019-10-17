@@ -15,12 +15,18 @@ from matplotlib import pyplot as plt
 import datetime
 import os
 
+#variables to be set - 
+a = 350 #lattice parameter
+s = 120 #separation
+run_num = 0 #Run number to plot magnetization for.
+lattice_draw_step = 10 #draw lattice vector maps every N Temp. steps.
+
+#---------------------------------------------------------------------
 #directory base
 subdir_base = 'run'
 fname_base = 'Dipolar_MC1_'
 magname_base = 'MCrun_mag_'
 cenname_base = 'MCrun_lattice_coords_'
-lattice_draw_step = 10 #draw lattice vector maps every N Temp. steps.
 num_runs = 10
 
 #results folder
@@ -53,7 +59,7 @@ stddev_data = np.std(data,axis=0)
 nvals, nvars = avg_data.shape
 
 #get the header from one of the files.
-fname = subdir_base + str(0) + '/' + fname_base + subdir_base + str(0) + '.txt'
+fname = subdir_base + str(run_num) + '/' + fname_base + subdir_base + str(run_num) + '.txt'
 hdr=[]
 with open(fname,'r') as reader:
     for i in range(header_skip):
@@ -90,6 +96,21 @@ f.close()
 
 #saving the magnetization vector maps.
 #load the centers data
-cen_file = subdir_base + str(0) + '/' + cenname_base + subdir_base + str(0) + '.txt'
+cen_file = subdir_base + str(run_num) + '/' + cenname_base + subdir_base + str(run_num) + '.txt'
 centers = np.genfromtxt(cen_file,delimiter=',',skip_header=2)
 
+for i in range(0,nvals,lattice_draw_step):
+    mag_file = subdir_base + str(run_num) + '/' + magname_base + subdir_base + str(run_num) + '_' + str(i) + '.txt'
+    mag_data = np.genfromtxt(mag_file, delimiter=',', skip_header=1)
+    
+    #save the plot
+    fig, ax1 = plt.subplots(figsize=(8,8))
+    ax1.set_title('a = {0:3d}, s = {1:3d}, T = {3:.3f}'.format(a,s,avg_data[i,0]))
+    q1 = ax1.quiver(centers[0,:],centers[1,:],mag_data[:,0],mag_data[:,1],pivot='mid')
+    #plt.draw()
+    plt.savefig(opdir+'Lattice_state_'+str(i)+'.png',bbox_inches='tight')
+    plt.close()
+
+print('Averaging and Plotting complete.\n')
+
+    
