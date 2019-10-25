@@ -96,17 +96,20 @@ def draw_lattice(microscope,
     #then the circle part
     cc = np.sqrt(X**2 + Y**2)
     temp = np.zeros([dim,dim])
-    temp[np.where(cc <= Ly/2)] = 1.0
+    temp[np.where(cc <= Ly/2)] = 1
     cc = np.roll(np.roll(temp,int(-(Lx-Ly)/2),axis=1),-1,axis=0)
-    isl_img[np.where(cc == 1.0)] = 1.0
+    isl_img[np.where(cc == 1.0)] = 1
     cc = np.roll(np.roll(temp,int((Lx-Ly)/2),axis=1),-1,axis=0)
-    isl_img[np.where(cc == 1.0)] = 1.0
+    isl_img[np.where(cc == 1.0)] = 1
     
     
     #arrays for holding variables
     latt = np.zeros([im_sz,im_sz])
     magx = np.zeros([im_sz,im_sz])
     magy = np.zeros([im_sz,im_sz])
+    col_gmap = np.zeros((im_sz,im_sz), dtype = np.uint8)
+    col_rmap = col_gmap
+    col_bmap = col_gmap
 
     #offsets for lattice
     #xoff = d2-np.abs(np.amin(new_cen[:,1])) + buff
@@ -130,9 +133,46 @@ def draw_lattice(microscope,
         latt[int(ys):int(ye),int(xs):int(xe)] += temp[0:int(ye-ys)+1,0:int(xe-xs)+1]
         magx[int(ys):int(ye),int(xs):int(xe)] += temp[0:int(ye-ys)+1,0:int(xe-xs)+1]*mag[i,0]
         magy[int(ys):int(ye),int(xs):int(xe)] += temp[0:int(ye-ys)+1,0:int(xe-xs)+1]*mag[i,1]
+
+        #color map assignment
+        if (mag[i,1] == 0):
+            if (mag[i,0] < 0):
+                #pointing left - green
+                col_gmap[int(ys):int(ye),int(xs):int(xe)] += temp[0:int(ye-ys)+1,0:int(xe-xs)+1].astype('uint8')*255
+            if (mag[i,0] > 0):
+                #pointing right - ref
+                col_rmap[int(ys):int(ye),int(xs):int(xe)] += temp[0:int(ye-ys)+1,0:int(xe-xs)+1].astype('uint8')*255
+        if (mag[i,1] > 0):
+            #top half
+            if (mag[i,0] < 0):
+                #ponting top-left - cyan
+                col_gmap[int(ys):int(ye),int(xs):int(xe)] += temp[0:int(ye-ys)+1,0:int(xe-xs)+1].astype('uint8')*255
+                col_bmap[int(ys):int(ye),int(xs):int(xe)] += temp[0:int(ye-ys)+1,0:int(xe-xs)+1].astype('uint8')*255
+            if (mag[i,0] > 0):
+                #pointing top-right - magenta
+                col_rmap[int(ys):int(ye),int(xs):int(xe)] += temp[0:int(ye-ys)+1,0:int(xe-xs)+1].astype('uint8')*255
+                col_bmap[int(ys):int(ye),int(xs):int(xe)] += temp[0:int(ye-ys)+1,0:int(xe-xs)+1].astype('uint8')*255
+        if (mag[i,1] < 0):
+            #bottom half
+            if (mag[i,0] < 0):
+                #pointing bot-left - yellow
+                col_rmap[int(ys):int(ye),int(xs):int(xe)] += temp[0:int(ye-ys)+1,0:int(xe-xs)+1].astype('uint8')*255
+                col_gmap[int(ys):int(ye),int(xs):int(xe)] += temp[0:int(ye-ys)+1,0:int(xe-xs)+1].astype('uint8')*255
+            if (mag[i,0] > 0):
+                #pointing bot-right - orange
+                col_rmap[int(ys):int(ye),int(xs):int(xe)] += temp[0:int(ye-ys)+1,0:int(xe-xs)+1].astype('uint8')*255
+                col_gmap[int(ys):int(ye),int(xs):int(xe)] += temp[0:int(ye-ys)+1,0:int(xe-xs)+1].astype('uint8')*165
         #magx += temp2*mag[i,0]
         #magy += temp2*mag[i,1]
-        
+    color_lattmap = np.zeros((im_sz,im_sz,3), dtype = np.uint8)
+    color_lattmap[:,:,0] = col_rmap/np.amax(col_rmap)*255
+    color_lattmap[:,:,1] = col_gmap/np.amax(col_gmap)*255
+    color_lattmap[:,:,2] = col_bmap/np.amax(col_bmap)*255
+    
+    if save_lattice:
+        # we are going to save an image of the lattice islands with color indicating magnetization direction.
+        sk_io.imsave(mag_fname+'_maglattice.jpg',color_lattmap)
+    
     if save_tfs:
         
         #compute the magnetic phase shift

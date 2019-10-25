@@ -13,12 +13,14 @@ import numpy as np
 from matplotlib import pyplot as plt
 import datetime
 import os
+from draw_lattice import draw_lattice
 
 def afasi_analyzedata(a = 350, #lattice parameter
                       s = 120, #separation
                       run_num = 0, #Run number to plot magnetization
                       lattice_draw_step = 10, #draw lattice vector
-                      fldr = '12x12_set1/results_runs_data/'
+                      fldr = '12x12_set1/results_runs_data/',
+                      draw_col_lattice = False #drawing the islands with color map.
                       ):
 
     #---------------------------------------------------------------------
@@ -95,20 +97,28 @@ def afasi_analyzedata(a = 350, #lattice parameter
     
     #saving the magnetization vector maps.
     #load the centers data
-    cen_file = fldr + subdir_base + str(run_num) + '/' + cenname_base + subdir_base + str(run_num) + '.txt'
-    centers = np.genfromtxt(cen_file,delimiter=',',skip_header=2)
+    cen_file = fldr + subdir_base + str(run_num) + '/' + cenname_base + subdir_base + str(run_num)
+    centers = np.genfromtxt(cen_file + '.txt',delimiter=',',skip_header=2)
     
     for i in range(0,nvals,lattice_draw_step):
-        mag_file = fldr + subdir_base + str(run_num) + '/' + magname_base + subdir_base + str(run_num) + '_' + str(i) + '.txt'
-        mag_data = np.genfromtxt(mag_file, delimiter=',', skip_header=1)
+        mag_file = fldr + subdir_base + str(run_num) + '/' + magname_base + subdir_base + str(run_num) + '_' + str(i)
+        mag_data = np.genfromtxt(mag_file + '.txt', delimiter=',', skip_header=1)
         
         #save the plot
         fig, ax1 = plt.subplots(figsize=(8,8))
+        plt.rcParams['image.cmap'] = 'Paired'
         ax1.set_title('a = {0:3d}, s = {1:3d}, T = {2:.4e}'.format(a,s,avg_data[i,0]))
-        q1 = ax1.quiver(centers[:,0],centers[:,1],mag_data[:,0],mag_data[:,1],pivot='mid')
+        col_arr = np.arctan2(mag_data[:,1],mag_data[:,0])
+        q1 = ax1.quiver(centers[:,0],centers[:,1],mag_data[:,0],mag_data[:,1],col_arr,pivot='mid',scale=25,headwidth=5)
         #plt.draw()
-        plt.savefig(opdir+'Lattice_state_'+str(i)+'.png',bbox_inches='tight')
+        plt.savefig(opdir+'Lattice_state_'+str(i)+'.pdf',bbox_inches='tight')
         plt.close()
+
+        #calling draw lattice.
+        blank = 0
+        if (draw_col_lattice):
+            res = draw_lattice(blank,cen_fname = cen_file, mag_fname = mag_file, dim = 500, del_px = 30, Lx = 300, Ly = 100, thk = 10, save_tfs = False, save_lattice = True,
+                               buff_offset = 200)
     
     print('Averaging and Plotting complete.\n')
     
