@@ -107,7 +107,7 @@ def draw_lattice(microscope,
     latt = np.zeros([im_sz,im_sz])
     magx = np.zeros([im_sz,im_sz])
     magy = np.zeros([im_sz,im_sz])
-    col_gmap = np.zeros((im_sz,im_sz), dtype = np.uint8)
+    col_gmap = np.zeros((im_sz,im_sz), dtype = 'uint8')
     col_rmap = col_gmap
     col_bmap = col_gmap
 
@@ -164,14 +164,14 @@ def draw_lattice(microscope,
                 col_gmap[int(ys):int(ye),int(xs):int(xe)] += temp[0:int(ye-ys)+1,0:int(xe-xs)+1].astype('uint8')*165
         #magx += temp2*mag[i,0]
         #magy += temp2*mag[i,1]
-    color_lattmap = np.zeros((im_sz,im_sz,3), dtype = np.uint8)
+    color_lattmap = np.zeros((im_sz,im_sz,3), dtype = 'uint8')
     color_lattmap[:,:,0] = col_rmap/np.amax(col_rmap)*255
     color_lattmap[:,:,1] = col_gmap/np.amax(col_gmap)*255
     color_lattmap[:,:,2] = col_bmap/np.amax(col_bmap)*255
     
     if save_lattice:
         # we are going to save an image of the lattice islands with color indicating magnetization direction.
-        sk_io.imsave(mag_fname+'_maglattice.jpg',color_lattmap)
+        sk_io.imsave(mag_fname+'_maglattice.png',color_lattmap)
     
     if save_tfs:
         
