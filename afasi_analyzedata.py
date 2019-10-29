@@ -146,7 +146,6 @@ def afasi_isingpairs(a = 350, #lattice parameter
     fname_base = 'Dipolar_MC1_'
     magname_base = 'MCrun_mag_'
     cenname_base = 'MCrun_lattice_coords_'
-    num_runs = 10
     skip_header = 16
     
     #results folder
@@ -181,7 +180,7 @@ def afasi_isingpairs(a = 350, #lattice parameter
     #loop over each island pair for a given temperature and determine whether
     #islands are AF or FM.
     isingpair_file = opdir + 'Isingpair_data.txt'
-    f = open(data_file,"w+")
+    f = open(isingpair_file,"w+")
     d = datetime.datetime.now()
     f.write('# Ising Pair Data from MC run.\n')
     f.write('# Created: C. Phatak, ANL \n')
