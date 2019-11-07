@@ -50,7 +50,7 @@ def draw_lattice(microscope,
     #material parameters for phase and amp. computation.
     #lattice values
     latt_V0 = 20.0 #V
-    latt_xip0 = 100 #nm
+    latt_xip0 = 200 #nm
     #Magnetization parameters
     b0 = 1.0e4 #Gauss
     phi0 = 20.7e6 #Gauss.nm^2
@@ -181,7 +181,7 @@ def draw_lattice(microscope,
         latt_ephi = microscope.sigma * latt_V0 * thk * latt * del_px
         #back ground phase
         if random_phase:
-            mem_phi = microscope.sigma * mem_V0 * mem_thk * np.random.uniform(low = -np.pi/64, high = np.pi/64, size=latt.shape)
+            mem_phi = microscope.sigma * mem_V0 * mem_thk + np.random.uniform(low = -np.pi/16, high = np.pi/16, size=latt.shape)
         else:
             mem_phi = microscope.sigma * mem_V0 * mem_thk
 
