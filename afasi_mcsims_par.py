@@ -60,6 +60,7 @@ def run_MC(n_run, #job ID number
            save_file, #to save files in intermediate MC steps. every N steps.
            file_name, #filename for loading the data.
            verbose,
+           work_dir, #working directory
            display):
     
     #create the job ID
@@ -68,7 +69,11 @@ def run_MC(n_run, #job ID number
     
     #get current working directory
     cwd = os.getcwd()
-    dir = cwd+'/'+jobID+'/'
+    if not work_dir:
+        dir = cwd+'/'+jobID+'/'
+    else:
+        dir = work_dir + '/'+jobID+'/'
+
     print('Saving to directory - '+dir)
     
     #create directory if it does not exist.

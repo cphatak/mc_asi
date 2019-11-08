@@ -17,6 +17,7 @@ from draw_lattice import draw_lattice
 
 def afasi_analyzedata(a = 350, #lattice parameter
                       s = 120, #separation
+                      tot_runs = 10, # total number of runs
                       run_num = 0, #Run number to plot magnetization
                       lattice_draw_step = 10, #draw lattice vector
                       fldr = '12x12_set1/results_runs_data/',
@@ -29,7 +30,7 @@ def afasi_analyzedata(a = 350, #lattice parameter
     fname_base = 'Dipolar_MC1_'
     magname_base = 'MCrun_mag_'
     cenname_base = 'MCrun_lattice_coords_'
-    num_runs = 10
+    num_runs = tot_runs
     
     #results folder
     #cwd = os.getcwd()
@@ -111,7 +112,7 @@ def afasi_analyzedata(a = 350, #lattice parameter
         col_arr = np.arctan2(mag_data[:,1],mag_data[:,0])
         q1 = ax1.quiver(centers[:,0],centers[:,1],mag_data[:,0],mag_data[:,1],col_arr,pivot='mid',scale=25,headwidth=5)
         #plt.draw()
-        plt.savefig(opdir+'Lattice_state_'+str(i)+'.pdf',bbox_inches='tight')
+        plt.savefig(opdir+'Lattice_state_'+str(i)+'.jpg',bbox_inches='tight', dpi=150, quality=95)
         plt.close()
 
         #calling draw lattice.
