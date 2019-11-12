@@ -15,7 +15,7 @@ import matplotlib as mpl
 mpl.use('Agg') # for linux operation.
 import multiprocessing as mp
 from afasi_mcsims_par import print_sysinfo,run_MC
-from afasi_analyzedata import afasi_analyzedata
+from afasi_analyzedata import afasi_analyzedata, afasi_isingpairs
 import os as os
 
 
@@ -87,6 +87,9 @@ for ia in range(n_a):
         #Once the run is complete, then we run analyze_data to average the results.
         res = afasi_analyzedata(a = int(a), s = int(s), tot_runs = nproc, run_num = 0, lattice_draw_step = lattice_draw_step,
                                 fldr = work_dir+'/')
+        
+        #Also run the Ising Pair analysis
+        res2 = afasi_isingpairs(a = int(a), s = int(s), run_num = 0, fldr = work_dir+'/', lattice_draw_step = lattice_draw_step)
         
         #then tar all the run output files.
         os.system("tar -zcf "+work_dir+"/results_runs_data.tar.gz "+work_dir+"/run*")

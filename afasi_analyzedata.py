@@ -138,7 +138,9 @@ location of the AF/FM pairs.
 def afasi_isingpairs(a = 350, #lattice parameter
                      s = 120, #separation distance
                      run_num = 0, #run number to compute the data for
-                     fldr = '12x12_set1/results_runs_data/'
+                     fldr = '12x12_set1/results_runs_data/',
+                     lattice_draw_step = 10, #Temp steps to draw ising maps.
+                     save_image = True #save the Ising Images
                      ):
     
     #---------------------------------------------------------------------
@@ -189,7 +191,7 @@ def afasi_isingpairs(a = 350, #lattice parameter
     f.write('# Header from MC runs data follows: \n')
     f.write(''.join(hdr))
     
-    for it in range(ntemp):
+    for it in range(0,ntemp,lattice_draw_step):
         mag_file = fldr + subdir_base + str(run_num) + '/' + magname_base + subdir_base + str(run_num) + '_' + str(it)
         mag_data = np.genfromtxt(mag_file + '.txt', delimiter=',', skip_header=1)
         
@@ -235,7 +237,7 @@ def afasi_isingpairs(a = 350, #lattice parameter
             ax1.scatter(cent_x,cent_y,c=c)
         
         #out of island loop
-        plt.savefig(opdir + 'IsingPairMap_'+str(it)+'.pdf',bbox_inches='tight')
+        plt.savefig(opdir + 'IsingPairMap_'+str(it)+'.jpg',bbox_inches='tight', dpi=150, quality=95)
         plt.close()
         #save the data into file
         f.write('{0:.4e}, {1:3d}, {2:3d}\n'.format(data[it,0],af_count,fm_count))
