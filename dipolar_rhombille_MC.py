@@ -6,7 +6,7 @@
 # for performing Monte Carlo Simulations that are based
 # on dipolar energy interactions as the main energy term
 #
-# Written by CD Phatak, ANL, 02.May.2019.
+# Written by CD Phatak, ANL, 23.Oct.2020.
 
 #import necessary modules
 import numpy as np
