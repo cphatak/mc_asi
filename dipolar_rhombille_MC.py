@@ -14,16 +14,16 @@ import scipy.constants as physcon
 from scipy.spatial import cKDTree as sp_cKDTree
 
 
-class Dipolar_MC(object):
+class Dipolar_Rhomb_MC(object):
 
     def __init__(self,
                  a = 350, # lattice parameter
-                 s = 120, # island separation
                  nx = 1, # repeat along x
                  ny = 1, # repeat along y
                  max_nn_dist = 500, # max. distance of nearest neighbors
                  max_nn_num = 9, # max. number of nearest neighbors
-                 latt_type = 'slanted', #slated or rectangular lattice.
+                 latt_orient = 'slanted', #slated or rectangular lattice.
+                 latt_type = 'dual_kagome', #type of Rhombille lattice.
                  dir = '/', #folder name
                  jobID = 'run1', #job ID
                  init_random = True, #initial magnetization of the lattice
@@ -33,7 +33,11 @@ class Dipolar_MC(object):
         #be set below.
         
         #parameters for describing lattice
-        self.n_isl = nx * ny * 6
+        #multiplier for each motif depends on type of lattice.
+        latt_choices = {'dual_kagome': 6, 'regular': 2, 'mixed' : 8}
+        mult = latt_choices.get(latt_type,0)
+        
+        self.n_isl = nx * ny * mult
         self.centers = np.zeros([2,self.n_isl])
         self.angles = np.zeros([self.n_isl])
         self.max_nn_num = max_nn_num
@@ -44,7 +48,9 @@ class Dipolar_MC(object):
         self.jobID = jobID
         
         #initialize the lattice
-        res = self.init_afasi_latt(a = a, s = s, nx = nx, ny = ny, latt_type = latt_type)
+        res = self.init_rhomb_latt(a = a, nx = nx, ny = ny,
+                                   latt_orient = latt_orient,
+                                   latt_type = latt_type)
         
         #now to use the cKDTree method
         comb_xy = self.centers.transpose()
@@ -107,7 +113,7 @@ class Dipolar_MC(object):
     
     
     #------------------------------------------------------------------
-    # Init lattice function for AFASI
+    # Init lattice function for Rhombille lattice
     #
     # This function will initialize the lattice for given set of lattice parameters
     # and num of islands along x and y. The output will be an array centers consisting
@@ -115,50 +121,112 @@ class Dipolar_MC(object):
     # for magnetization, and an array nn_inds consisting of nearest neighbor indices
     # for each island to be considered for dipolar interactions.
     #
-    def init_afasi_latt(self, a = 350, s = 120, nx = 1, ny = 1, 
-                        latt_type= 'slanted',
+    def init_rhomb_latt(self, a = 350, nx = 1, ny = 1, 
+                        latt_orient= 'slanted', latt_type='dual_kagome',
                         verbose = False, debug = False):
     
         # Counter for tracking islands     
-        count = 0
-        for i in range(nx):
-            for j in range(ny):
-                if (latt_type == 'rectangle'):
-                    if (np.mod(j,2) != 0):
-                        i -= 1
-                
-                if debug:
-                    print(i,j)
-                #horizontal islands
-                self.angles[count] = 0
-                self.angles[count+1] = 0
-                self.centers[0,count] = i*2*a - a/2 + j*a
-                self.centers[1,count] = j*np.sqrt(3)*a - a*np.sqrt(3)/4 + s/2
-                self.centers[0,count+1] = i*2*a - a/2 + j*a
-                self.centers[1,count+1] = j*np.sqrt(3)*a - a*np.sqrt(3)/4 - s/2
-                #first set of rotated islands
-                self.angles[count+2] = 120
-                self.angles[count+3] = 120
-                self.centers[0,count+2] = i*2*a + a/2 + j*a + np.sqrt(3)/4*s
-                self.centers[1,count+2] = j*np.sqrt(3)*a - a*np.sqrt(3)/4 + s/4
-                self.centers[0,count+3] = i*2*a + a/2 + j*a - np.sqrt(3)/4*s
-                self.centers[1,count+3] = j*np.sqrt(3)*a - a*np.sqrt(3)/4 - s/4
-                #second set of rotated islands
-                self.angles[count+4] = 60
-                self.angles[count+5] = 60
-                self.centers[0,count+4] = i*2*a + j*a - np.sqrt(3)*s/4
-                self.centers[1,count+4] = j*np.sqrt(3)*a + a*np.sqrt(3)/4 + s/4
-                self.centers[0,count+5] = i*2*a + j*a + np.sqrt(3)*s/4
-                self.centers[1,count+5] = j*np.sqrt(3)*a + a*np.sqrt(3)/4 - s/4
-    
-                #increment count
-                count += 6
+        cnt = 0
+        
+        #trigno terms requires
+        c60 = np.cos(np.deg2rad(60))
+        s60 = np.sin(np.deg2rad(60))
+        
+        #check lattice type and initialize the lattice.
+        if (latt_type == 'dual_kagome'):
+            for i in range(nx):
+                for j in range(ny):
+                    if (latt_orient == 'rectangle'):
+                        if (np.mod(j,2) != 0):
+                            i -= 1
+                    
+                    #compute centers and angles
+        
+                    self.centers[0,cnt] = 0 + i*2*a*s60 + j*a*s60
+                    self.centers[1,cnt] = a/2 + j*3*a/2
+                    self.angles[cnt] = 90
+            
+                    self.centers[0,cnt+1] = a/2*s60 + i*2*a*s60 + j*a*s60
+                    self.centers[1,cnt+1] = -a/2*c60 + j*3*a/2
+                    self.angles[cnt+1] = -30
+            
+                    self.centers[0,cnt+2] = -a/2*s60 + i*2*a*s60 + j*a*s60
+                    self.centers[1,cnt+2] = -a/2*c60 + j*3*a/2
+                    self.angles[cnt+2] = -150
+            
+                    self.centers[0,cnt+3] = -a/2*s60 + i*2*a*s60 + j*a*s60
+                    self.centers[1,cnt+3] = a/2+a/2*c60 + j*3*a/2
+                    self.angles[cnt+3] = -150
+                    
+                    self.centers[0,cnt+4] = -a*s60 + i*2*a*s60 + j*a*s60
+                    self.centers[1,cnt+4] = 0 + j*3*a/2
+                    self.angles[cnt+4] = 90
+                    
+                    self.centers[0,cnt+5] = -a/2*s60 + i*2*a*s60 + j*a*s60
+                    self.centers[1,cnt+5] = -a/2-a/2*c60 + j*3*a/2
+                    self.angles[cnt+5] = -30
+                    
+                    #increment count
+                    cnt += 6
+        
+        if (latt_type == 'regular'):
+            for i in range(nx):
+                for j in range(ny):
+                    if (latt_orient == 'rectangle'):
+                        if (np.mod(j,2) != 0):
+                            i -= 1
+                    
+                    #compute centers and angles
+        
+                    self.centers[0,cnt] = j*a*c60 + a/2 + i*a
+                    self.centers[1,cnt] = j*a*s60
+                    self.angles[cnt] = 0
+                    self.centers[0,cnt+1] = j*a*c60 + a/2*c60 + i*a
+                    self.centers[1,cnt+1] = j*a*s60 + a/2*s60
+                    self.angles[cnt+1] = 60
+                                
+                    #increment count
+                    cnt += 2
+        
+        if (latt_type == 'mixed'):
+            for i in range(nx):
+                for j in range(ny):
+                    
+                    #centers ang angles
+        
+                    self.centers[0,cnt] = 0 + i*2*a*s60
+                    self.centers[1,cnt] = a/2 + j*2*a
+                    self.angles[cnt] = 90
+                    self.centers[0,cnt+1] = a/2*s60 + i*2*a*s60
+                    self.centers[1,cnt+1] = -a/2*c60 + j*2*a
+                    self.angles[cnt+1] = -30
+                    self.centers[0,cnt+2] = -a/2*s60 + i*2*a*s60
+                    self.centers[1,cnt+2] = -a/2*c60 + j*2*a
+                    self.angles[cnt+2] = -150
+                    self.centers[0,cnt+3] = a/2*s60 + i*2*a*s60
+                    self.centers[1,cnt+3] = a/2+a/2*c60 + j*2*a
+                    self.angles[cnt+3] = -30
+                    self.centers[0,cnt+4] = -a/2*s60 + i*2*a*s60
+                    self.centers[1,cnt+4] = a/2+a/2*c60 + j*2*a
+                    self.angles[cnt+4] = -150
+                    self.centers[0,cnt+5] = -a*s60 + i*2*a*s60
+                    self.centers[1,cnt+5] = 0 + j*2*a
+                    self.angles[cnt+5] = 90
+                    self.centers[0,cnt+6] = -a/2*s60 + i*2*a*s60
+                    self.centers[1,cnt+6] = -a/2-a/2*c60 + j*2*a
+                    self.angles[cnt+6] = -30
+                    self.centers[0,cnt+7] = a/2*s60 + i*2*a*s60
+                    self.centers[1,cnt+7] = -a/2-a/2*c60 + j*2*a
+                    self.angles[cnt+7] = -150
+                    
+                    #increment count
+                    cnt += 8
     
         return 1
 
     #------------------------------------------------------------------
     #
-    # Latt_Energy function for AFASI
+    # Latt_Energy function for Rhombille Latt
     #
     # Computes the total energy of the entire lattice
     #
@@ -199,7 +267,7 @@ class Dipolar_MC(object):
 
     #------------------------------------------------------------------
     #
-    # Calc_del_Energy function for AFASI
+    # Calc_del_Energy function for Rhombille Latt.
     #
     # Computes the energy of a given site in the lattice.
     #
