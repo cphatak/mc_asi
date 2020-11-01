@@ -107,7 +107,7 @@ def rhomb_analyzedata(a = 350, #lattice parameter
         #save the plot
         fig, ax1 = plt.subplots(figsize=(8,8))
         plt.rcParams['image.cmap'] = 'Paired'
-        ax1.set_title('a = {0:3d}, s = {1:3d}, T = {2:.4e}'.format(a,s,avg_data[i,0]))
+        ax1.set_title('a = {0:3d}, T = {2:.4e}'.format(a,avg_data[i,0]))
         col_arr = np.arctan2(mag_data[:,1],mag_data[:,0])
         q1 = ax1.quiver(centers[:,0],centers[:,1],mag_data[:,0],mag_data[:,1],col_arr,pivot='mid',scale=25,headwidth=5)
         #plt.draw()
