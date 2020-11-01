@@ -87,16 +87,17 @@ def run_MC(n_run, #job ID number
     #variable for pair flip
     pairflip = False
 
-    #Compute number of islands.
-    #6 islands per motif.
-    n_isl = nx * ny * 6
-    print('Number of islands:',n_isl)
 
     #next we initialize the lattice.
     dipolar_MC1 = Dipolar_Rhomb_MC(a = a, nx = nx, ny = ny, max_nn_dist = max_nn_dist,
                             max_nn_num = max_nn_num, dir = dir, jobID = jobID, 
                             latt_orient='rectangle', latt_type = latt_type,
                             init_random = True)#, centers = centers, angles = angles, nn_inds = nn_inds)
+    
+    #Compute number of islands.
+    #6 islands per motif.
+    n_isl = dipolar_MC1.n_isl
+    print('Number of islands:',n_isl)
     
     #check if we need to load previous data
     if load_file:
