@@ -24,6 +24,7 @@ class Dipolar_Rhomb_MC(object):
                  max_nn_num = 9, # max. number of nearest neighbors
                  latt_orient = 'slanted', #slated or rectangular lattice.
                  latt_type = 'dual_kagome', #type of Rhombille lattice.
+                 man_fname = 'quarry.txt', #filename for manual input of lattice info.
                  dir = '/', #folder name
                  jobID = 'run1', #job ID
                  init_random = True, #initial magnetization of the lattice
@@ -34,12 +35,32 @@ class Dipolar_Rhomb_MC(object):
         
         #parameters for describing lattice
         #multiplier for each motif depends on type of lattice.
-        latt_choices = {'dual_kagome': 6, 'regular': 2, 'mixed' : 8}
-        mult = latt_choices.get(latt_type,0)
+        latt_choices = {'dual_kagome': 6, 'regular': 2, 'mixed' : 8, 'manual' : 0}
+        mult = latt_choices.get(latt_type,-1)
         
-        self.n_isl = nx * ny * mult
-        self.centers = np.zeros([2,self.n_isl])
-        self.angles = np.zeros([self.n_isl])
+        if (mult == 0):
+            #we are reading the manual file
+            data = np.genfromtxt(man_fname,delimiter=',',skip_header=7)
+            n_isl, cols = data.shape
+            self.n_isl = n_isl
+            self.centers = np.zeros([2,self.n_isl])
+            self.angles = np.zeros([self.n_isl])
+            self.centers[0,:] = data[:,2]
+            self.centers[1:,] = data[:,3]
+            self.angles[:] = np.rad2deg(np.arctan2(data[:,4],data[:,5]))
+            
+        else:
+            #generating the lattice via geometry.
+            self.n_isl = nx * ny * mult
+            self.centers = np.zeros([2,self.n_isl])
+            self.angles = np.zeros([self.n_isl])
+            #initialize the lattice
+            res = self.init_rhomb_latt(a = a, nx = nx, ny = ny,    
+                                       latt_orient = latt_orient,
+                                       latt_type = latt_type)
+        
+        
+        #set nearest neighbor parameters.
         self.max_nn_num = max_nn_num
         self.max_nn_dist = max_nn_dist
         
@@ -47,10 +68,6 @@ class Dipolar_Rhomb_MC(object):
         self.dir = dir
         self.jobID = jobID
         
-        #initialize the lattice
-        res = self.init_rhomb_latt(a = a, nx = nx, ny = ny,
-                                   latt_orient = latt_orient,
-                                   latt_type = latt_type)
         
         #now to use the cKDTree method
         comb_xy = self.centers.transpose()
