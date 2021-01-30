@@ -21,6 +21,7 @@ class Dipolar_MC(object):
                  s = 120, # island separation
                  nx = 1, # repeat along x
                  ny = 1, # repeat along y
+                 th = 30.0, # rotation angle of paired islands
                  max_nn_dist = 500, # max. distance of nearest neighbors
                  max_nn_num = 9, # max. number of nearest neighbors
                  latt_type = 'slanted', #slated or rectangular lattice.
@@ -44,7 +45,7 @@ class Dipolar_MC(object):
         self.jobID = jobID
         
         #initialize the lattice
-        res = self.init_afasi_latt(a = a, s = s, nx = nx, ny = ny, latt_type = latt_type)
+        res = self.init_afasi_latt(a = a, s = s, nx = nx, ny = ny, th = th, latt_type = latt_type)
         
         #now to use the cKDTree method
         comb_xy = self.centers.transpose()
@@ -115,44 +116,104 @@ class Dipolar_MC(object):
     # for magnetization, and an array nn_inds consisting of nearest neighbor indices
     # for each island to be considered for dipolar interactions.
     #
-    def init_afasi_latt(self, a = 350, s = 120, nx = 1, ny = 1, 
-                        latt_type= 'slanted',
+    # Updated to include a rotational angle for the paired islands.
+    #
+    def init_afasi_latt(self, a = 350, s = 120, nx = 1, ny = 1,
+                        th = 30, latt_type= 'slanted',
                         verbose = False, debug = False):
     
-        # Counter for tracking islands     
+        
+        thr = np.deg2rad(th)
+        r_mat = np.array([[np.cos(thr),-np.sin(thr)],[np.sin(thr),np.cos(thr)]])
+    
+        #loop over number of islands
         count = 0
+        ext_cens = np.zeros([2,6])
+        for nn in range(6):
+            ext_cens[0,0] = s/2
+            ext_cens[1,0] = 0
+            ext_cens[0,1] = -s/2
+            ext_cens[1,1] = 0
+            ext_cens[0,2] = -s/4
+            ext_cens[1,2] = np.sqrt(3)*s/4
+            ext_cens[0,3] = s/4
+            ext_cens[1,3] = -np.sqrt(3)*s/4
+            ext_cens[0,4] = -s/4
+            ext_cens[1,4] = -np.sqrt(3)*s/4
+            ext_cens[0,5] = s/4
+            ext_cens[1,5] = np.sqrt(3)*s/4
+        
+        ext_cens = np.matmul(r_mat,ext_cens)
+            
+        
         for i in range(nx):
             for j in range(ny):
-                if (latt_type == 'rectangle'):
-                    if (np.mod(j,2) != 0):
-                        i -= 1
                 
-                if debug:
-                    print(i,j)
-                #horizontal islands
-                self.angles[count] = 0
-                self.angles[count+1] = 0
-                self.centers[0,count] = i*2*a - a/2 + j*a
-                self.centers[1,count] = j*np.sqrt(3)*a - a*np.sqrt(3)/4 + s/2
-                self.centers[0,count+1] = i*2*a - a/2 + j*a
-                self.centers[1,count+1] = j*np.sqrt(3)*a - a*np.sqrt(3)/4 - s/2
-                #first set of rotated islands
-                self.angles[count+2] = 120
-                self.angles[count+3] = 120
-                self.centers[0,count+2] = i*2*a + a/2 + j*a + np.sqrt(3)/4*s
-                self.centers[1,count+2] = j*np.sqrt(3)*a - a*np.sqrt(3)/4 + s/4
-                self.centers[0,count+3] = i*2*a + a/2 + j*a - np.sqrt(3)/4*s
-                self.centers[1,count+3] = j*np.sqrt(3)*a - a*np.sqrt(3)/4 - s/4
-                #second set of rotated islands
-                self.angles[count+4] = 60
-                self.angles[count+5] = 60
-                self.centers[0,count+4] = i*2*a + j*a - np.sqrt(3)*s/4
-                self.centers[1,count+4] = j*np.sqrt(3)*a + a*np.sqrt(3)/4 + s/4
-                self.centers[0,count+5] = i*2*a + j*a + np.sqrt(3)*s/4
-                self.centers[1,count+5] = j*np.sqrt(3)*a + a*np.sqrt(3)/4 - s/4
-    
-                #increment count
+                if (latt_type == 'rectangle'):
+                            if (np.mod(j,2) != 0):
+                                i -= 1
+        
+                self.centers[0,count] = 0 + ext_cens[0,0] + 2*a*i + a*j
+                self.centers[1,count] = 0 + ext_cens[1,0] + np.sqrt(3)*a*j
+                self.angles[count] = 90 + th
+                
+                self.centers[0,count+1] = 0 + ext_cens[0,1] + 2*a*i + a*j
+                self.centers[1,count+1] = 0 + ext_cens[1,1] + np.sqrt(3)*a*j
+                self.angles[count+1] = 90 + th
+                
+                self.centers[0,count+2] = a/2 + ext_cens[0,2] + 2*a*i + a*j
+                self.centers[1,count+2] = np.sqrt(3)/2*a + ext_cens[1,2] + np.sqrt(3)*a*j
+                self.angles[count+2] = 30 + th
+                
+                self.centers[0,count+3] = a/2 + ext_cens[0,3] + 2*a*i + a*j
+                self.centers[1,count+3] = np.sqrt(3)/2*a + ext_cens[1,3] + np.sqrt(3)*a*j
+                self.angles[count+3] = 30 + th
+                
+                self.centers[0,count+4] = (-a/2) + ext_cens[0,4] + 2*a*i + a*j
+                self.centers[1,count+4] = np.sqrt(3)/2*a + ext_cens[1,4] + np.sqrt(3)*a*j
+                self.angles[count+4] = 150 + th
+                
+                self.centers[0,count+5] = (-a/2) + ext_cens[0,5] + 2*a*i + a*j
+                self.centers[1,count+5] = np.sqrt(3)/2*a + ext_cens[1,5] + np.sqrt(3)*a*j
+                self.angles[count+5] = 150 + th
+                
                 count += 6
+        
+        
+        # # Counter for tracking islands     
+        # count = 0
+        # for i in range(nx):
+        #     for j in range(ny):
+        #         if (latt_type == 'rectangle'):
+        #             if (np.mod(j,2) != 0):
+        #                 i -= 1
+                
+        #         if debug:
+        #             print(i,j)
+        #         #horizontal islands
+        #         self.angles[count] = 0
+        #         self.angles[count+1] = 0
+        #         self.centers[0,count] = i*2*a - a/2 + j*a
+        #         self.centers[1,count] = j*np.sqrt(3)*a - a*np.sqrt(3)/4 + s/2
+        #         self.centers[0,count+1] = i*2*a - a/2 + j*a
+        #         self.centers[1,count+1] = j*np.sqrt(3)*a - a*np.sqrt(3)/4 - s/2
+        #         #first set of rotated islands
+        #         self.angles[count+2] = 120
+        #         self.angles[count+3] = 120
+        #         self.centers[0,count+2] = i*2*a + a/2 + j*a + np.sqrt(3)/4*s
+        #         self.centers[1,count+2] = j*np.sqrt(3)*a - a*np.sqrt(3)/4 + s/4
+        #         self.centers[0,count+3] = i*2*a + a/2 + j*a - np.sqrt(3)/4*s
+        #         self.centers[1,count+3] = j*np.sqrt(3)*a - a*np.sqrt(3)/4 - s/4
+        #         #second set of rotated islands
+        #         self.angles[count+4] = 60
+        #         self.angles[count+5] = 60
+        #         self.centers[0,count+4] = i*2*a + j*a - np.sqrt(3)*s/4
+        #         self.centers[1,count+4] = j*np.sqrt(3)*a + a*np.sqrt(3)/4 + s/4
+        #         self.centers[0,count+5] = i*2*a + j*a + np.sqrt(3)*s/4
+        #         self.centers[1,count+5] = j*np.sqrt(3)*a + a*np.sqrt(3)/4 - s/4
+    
+        #         #increment count
+        #         count += 6
     
         return 1
 

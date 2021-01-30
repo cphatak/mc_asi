@@ -50,6 +50,7 @@ def run_MC(n_run, #job ID number
            s, #island separation
            nx, #num of islands along x
            ny, #num of islands along y
+           th, #rotation angle for paired islands
            mc_iters, #number of MC iterations
            eq_iters, #number of equilibriation iterations
            start_temp, #Start temperature
@@ -93,7 +94,7 @@ def run_MC(n_run, #job ID number
     print('Number of islands:',n_isl)
 
     #next we initialize the lattice.
-    dipolar_MC1 = Dipolar_MC(a = a, s = s, nx = nx, ny = ny, max_nn_dist = max_nn_dist,
+    dipolar_MC1 = Dipolar_MC(a = a, s = s, nx = nx, ny = ny, th = th, max_nn_dist = max_nn_dist,
                             max_nn_num = max_nn_num, dir = dir, jobID = jobID, 
                             latt_type='rectangle', init_random = True)#, centers = centers, angles = angles, nn_inds = nn_inds)
     
@@ -159,6 +160,8 @@ def run_MC(n_run, #job ID number
     f.write('# s = {0:.1f}\n'.format(s))
     f.write('# nx = {0:2d}\n'.format(nx))
     f.write('# ny = {0:2d}\n'.format(ny))
+    f.write('# Num Neighbors = {0:2d}\n'.format(max_nn_num))
+    f.write('# Rotation angle = {0:.1f}\n'.format(th))
     f.write('# Num isl = {0:4d}\n'.format(n_isl))
     f.write('# MC iters = {0:5d}\n'.format(mc_iters))
     f.write('# EQ_iters = {0:5d}\n'.format(eq_iters))

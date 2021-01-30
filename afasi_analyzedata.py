@@ -42,7 +42,7 @@ def afasi_analyzedata(a = 350, #lattice parameter
     
     
     #number of header lines to skip
-    header_skip = 16
+    header_skip = 18
     
     #process all the data
     fnames = []

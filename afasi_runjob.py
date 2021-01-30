@@ -20,8 +20,9 @@ import os as os
 
 
 #Running for mltiple values of a and s
-a_vals = np.array([350, 450])
-s_vals = np.array([120, 220])
+a_vals = np.array([350])
+s_vals = np.array([150])
+th = 90.0
 n_a = a_vals.size
 n_s = s_vals.size
 
@@ -38,6 +39,7 @@ for ia in range(n_a):
         s = s_vals[js]#120.0 #island separation
         nx = 3 #num of islands along x
         ny = 3 #num of islands along y
+        th = th #rotation angles
         mc_iters = 50 #number of MC iterations
         eq_iters = 0 #number of equilibriation iterations
         start_temp = 10.0 #Start temperature
@@ -52,7 +54,7 @@ for ia in range(n_a):
         lattice_draw_step = 5
         
         #set working directory
-        work_dir = '/Users/cphatak/work/af_asi_sims/test/'+str(nx)+'x'+str(ny)+'_set'+str(set_num)
+        work_dir = '/Users/cphatak/work/af_asi/test/'+str(nx)+'x'+str(ny)+'_set'+str(set_num)
         
         #get system information
         print_sysinfo()
@@ -67,6 +69,7 @@ for ia in range(n_a):
                                                   s, #island separation
                                                   nx, #num of islands along x
                                                   ny, #num of islands along y
+                                                  th, #rotation angle
                                                   mc_iters, #number of MC iterations
                                                   eq_iters, #number of equilibriation iterations
                                                   start_temp, #Start temperature
