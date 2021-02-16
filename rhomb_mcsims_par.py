@@ -50,6 +50,9 @@ def run_MC(n_run, #job ID number
            nx, #num of islands along x
            ny, #num of islands along y
            latt_type, #Type of Rhombille lattice.
+           man_fname, #Name of the file for manual loading of lattices
+           nn_num, #Max number of NN to consider
+           nn_dist, #Max distance for NN.
            mc_iters, #number of MC iterations
            eq_iters, #number of equilibriation iterations
            start_temp, #Start temperature
@@ -81,8 +84,8 @@ def run_MC(n_run, #job ID number
         os.makedirs(dir)
 
     #Set the next nearest neghbors
-    max_nn_num = 9
-    max_nn_dist = 4 * a
+    max_nn_num = nn_num
+    max_nn_dist = nn_dist
     
     #variable for pair flip
     pairflip = False
@@ -92,7 +95,7 @@ def run_MC(n_run, #job ID number
     dipolar_MC1 = Dipolar_Rhomb_MC(a = a, nx = nx, ny = ny, max_nn_dist = max_nn_dist,
                             max_nn_num = max_nn_num, dir = dir, jobID = jobID, 
                             latt_orient='rectangle', latt_type = latt_type,
-                            init_random = True)#, centers = centers, angles = angles, nn_inds = nn_inds)
+                            man_fname = man_fname, init_random = True)#, centers = centers, angles = angles, nn_inds = nn_inds)
     
     #Compute number of islands.
     #6 islands per motif.
@@ -161,7 +164,10 @@ def run_MC(n_run, #job ID number
     f.write('# nx = {0:2d}\n'.format(nx))
     f.write('# ny = {0:2d}\n'.format(ny))
     f.write('# Latt Type = {0}\n'.format(latt_type))
+    f.write('# Latt Name = {0}\n'.format(man_fname))
     f.write('# Num isl = {0:4d}\n'.format(n_isl))
+    f.write('# Max. NN = {0:2d}\n'.format(max_nn_num))
+    f.write('# Max NN dist = {0:.1f}\n'.format(max_nn_dist))
     f.write('# MC iters = {0:5d}\n'.format(mc_iters))
     f.write('# EQ_iters = {0:5d}\n'.format(eq_iters))
     f.write('# St. temp = {0:.4e}\n'.format(start_temp))

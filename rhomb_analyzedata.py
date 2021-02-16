@@ -13,7 +13,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import datetime
 import os
-from draw_lattice import draw_lattice
+#from draw_lattice import draw_lattice
 
 def rhomb_analyzedata(a = 350, #lattice parameter
                       tot_runs = 10, # total number of runs
@@ -41,7 +41,7 @@ def rhomb_analyzedata(a = 350, #lattice parameter
     
     
     #number of header lines to skip
-    header_skip = 16
+    header_skip = 19
     
     #process all the data
     fnames = []
@@ -115,10 +115,10 @@ def rhomb_analyzedata(a = 350, #lattice parameter
         plt.close()
 
         #calling draw lattice.
-        blank = 0
-        if (draw_col_lattice):
-            res = draw_lattice(blank,cen_fname = cen_file, mag_fname = mag_file, dim = 1000, del_px = 15, Lx = 300, Ly = 100, thk = 10, save_tfs = False, save_lattice = True,
-                               buff_offset = 200)
+        #blank = 0
+        #if (draw_col_lattice):
+        #    res = draw_lattice(blank,cen_fname = cen_file, mag_fname = mag_file, dim = 1000, del_px = 15, Lx = 300, Ly = 100, thk = 10, save_tfs = False, save_lattice = True,
+        #                       buff_offset = 200)
     
     print('Averaging and Plotting complete.\n')
     

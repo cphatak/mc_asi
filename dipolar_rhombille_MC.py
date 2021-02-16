@@ -10,7 +10,7 @@
 
 #import necessary modules
 import numpy as np
-import scipy.constants as physcon
+#import scipy.constants as physcon
 from scipy.spatial import cKDTree as sp_cKDTree
 
 
@@ -45,9 +45,9 @@ class Dipolar_Rhomb_MC(object):
             self.n_isl = n_isl
             self.centers = np.zeros([2,self.n_isl])
             self.angles = np.zeros([self.n_isl])
-            self.centers[0,:] = data[:,2]
-            self.centers[1:,] = data[:,3]
-            self.angles[:] = np.rad2deg(np.arctan2(data[:,4],data[:,5]))
+            self.centers[0,:] = data[:,3]
+            self.centers[1:,] = data[:,4]
+            self.angles[:] = np.rad2deg(np.arctan2(data[:,6],data[:,5]))
             
         else:
             #generating the lattice via geometry.

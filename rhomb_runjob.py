@@ -20,10 +20,12 @@ import os as os
 
 
 #Running for mltiple values of a and s
-a_vals = np.asarray([350])
-latt_types = np.asarray(['dual_kagome'])
+a_vals = np.asarray([300])
+latt_types = np.asarray(['manual'])
+man_fname = 'rhombus1_20210215_quarry.txt'
 n_a = a_vals.size
 n_l = latt_types.size
+
 
 for ia in range(n_a):
     for jl in range(n_l):
@@ -35,11 +37,14 @@ for ia in range(n_a):
         # LAttice and MC parameters.
         num_runs = 10 #Number of runs in parallel to perform.
         a = a_vals[ia]#350.0 #Lattice parameter
+        #set nearest neighbor information
+        nn_num = 9
+        nn_dist = 4 * a
         latt_type = latt_types[jl] #type of lattice.
         nx = 5 #num of islands along x
         ny = 5 #num of islands along y
         mc_iters = 1000 #number of MC iterations
-        eq_iters = 10 #number of equilibriation iterations
+        eq_iters = 100 #number of equilibriation iterations
         start_temp = 1.0e-5 #Start temperature
         end_temp = 1.0e-11 #end temperature
         n_temp = 300 #number of temperature steps
@@ -48,11 +53,11 @@ for ia in range(n_a):
         load_file = False #load magnetic config data during MC runs
         file_name = "MCrun_mag_run0_199.txt"
         verbose = False
-        display = True
+        display = False
         lattice_draw_step = 5
         
         #set working directory
-        work_dir = '/Users/cphatak/ANL_work/spinice/rhomb_latt/dual_kag_MC/'+str(nx)+'x'+str(ny)+'_set'+str(set_num)
+        work_dir = '/Users/cphatak/work/spinice/rhomb_latt/dual_kag_MC/'+str(nx)+'x'+str(ny)+'_set'+str(set_num)
         
         #get system information
         print_sysinfo()
@@ -67,6 +72,9 @@ for ia in range(n_a):
                                                   nx, #num of islands along x
                                                   ny, #num of islands along y
                                                   latt_type, #Type of Rhombille lattice.
+                                                  man_fname, #Name of the file for manual lattice.
+                                                  nn_num, #Max number of NN
+                                                  nn_dist, #Max distance of NN
                                                   mc_iters, #number of MC iterations
                                                   eq_iters, #number of equilibriation iterations
                                                   start_temp, #Start temperature
