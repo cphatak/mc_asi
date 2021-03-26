@@ -88,9 +88,11 @@ class Dipolar_MC(object):
         self.energy = 0
         self.avgenergy = 0
         self.netmag = np.sqrt(np.sum(self.magx)**2 + np.sum(self.magy)**2)
+        self.sumspin = np.sum(self.magx) + np.sum(self.magy)
         self.sp_heat = 0
         self.suscep = 0
         self.ul = 0
+        self.ul2 = 0
         
         #print output message
         print("Created the Dipolar_MC class.")
@@ -344,6 +346,9 @@ class Dipolar_MC(object):
         avg_mag = 0.0
         avg_mag2 = 0.0
         avg_mag4 = 0.0
+        avg_sumspin = 0.0
+        avg_sumspin2 = 0.0
+        avg_sumspin4 = 0.0
         
         #reset the counters for accepted values.
         self.n_lowaccept = 0
@@ -410,6 +415,7 @@ class Dipolar_MC(object):
                     
                 #Next we start computing various thermo. terms
                 self.netmag = np.sqrt(np.sum(self.magx)**2 + np.sum(self.magy)**2)
+                self.sumspin = np.sum(self.magx) + np.sum(self.magy)
                 
                 if (nn >= self.eq_iters):
                     avg_en += self.energy
@@ -417,6 +423,9 @@ class Dipolar_MC(object):
                     avg_mag += self.netmag
                     avg_mag2 += self.netmag**2
                     avg_mag4 += self.netmag**4
+                    avg_sumspin += self.sumspin
+                    avg_sumspin2 += self.sumspin**2
+                    avg_sumspin4 += self.sumspin**4
                 
                 #Save the file if needed
                 if (np.mod(nn,save_file) == 0):
@@ -432,9 +441,11 @@ class Dipolar_MC(object):
         cn = 1.0/((self.mc_iters-self.eq_iters)*self.n_isl)
         self.avgenergy = avg_en*cn
         self.netmag = avg_mag*cn
+        self.sumspin = avg_sumspin*cn
         self.sp_heat = (avg_en2*cn - avg_en*avg_en*cn**2)/self.temp**2
         self.suscep = (avg_mag2*cn - avg_mag*avg_mag*cn**2)/self.temp
         self.ul = 1.0 - (avg_mag4*cn/(3.0*(avg_mag2*cn)**2))
+        self.ul2 = 1.0 - (avg_sumspin4*cn/(3.0*(avg_sumspin2*cn)**2))
         
         #print some output
         if verbose:

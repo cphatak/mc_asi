@@ -169,7 +169,7 @@ def run_MC(n_run, #job ID number
     f.write('# End temp = {0:.4e}\n'.format(end_temp))
     f.write('# Num. temp = {0:3d}\n'.format(n_temp))
     f.write('#\n')
-    f.write('Temp,     Energy,     Mag,     Sp.Heat,    Susc., UL., LowAccept,  HighAccept,   NoAccept\n')
+    f.write('Temp,     Energy,     Mag,    AvgSpin, Sp.Heat,    Susc., UL., ULspin, LowAccept,  HighAccept,   NoAccept\n')
     f.close()
 
     #compute runtime
@@ -183,10 +183,13 @@ def run_MC(n_run, #job ID number
         dipolar_MC1.temp = temp_var[i]
         dipolar_MC1.MC_move(verbose=verbose, pairflip=pairflip, save_file=save_file) #optional argument verbose.
         f = open(dir+data_file,"a+")
-        f.write('{0:.4e}, {1:.4e}, {2:.3f}, {3:.4e}, {4:.4e}, {5:.3f}, {6:5d}, {7:5d}, {8:5d}\n'.format(dipolar_MC1.temp, dipolar_MC1.avgenergy, dipolar_MC1.netmag, dipolar_MC1.sp_heat, dipolar_MC1.suscep, dipolar_MC1.ul, dipolar_MC1.n_lowaccept, dipolar_MC1.n_highaccept, dipolar_MC1.n_noaccept))
+        f.write('{0:.4e}, {1:.4e}, {2:.3f}, {3:.3f}, {4:.4e}, {5:.4e}, {6:.3f}, {7:.3f}, {8:5d}, {9:5d}, {10:5d}\n'.format(
+            dipolar_MC1.temp, dipolar_MC1.avgenergy, dipolar_MC1.netmag, dipolar_MC1.sumspin, dipolar_MC1.sp_heat, 
+            dipolar_MC1.suscep, dipolar_MC1.ul, dipolar_MC1.ul2, dipolar_MC1.n_lowaccept, dipolar_MC1.n_highaccept, 
+            dipolar_MC1.n_noaccept))
         f.close()
         if verbose:
-            print(dipolar_MC1.temp, dipolar_MC1.avgenergy, dipolar_MC1.netmag, dipolar_MC1.sp_heat, dipolar_MC1.suscep, dipolar_MC1.ul, dipolar_MC1.n_highaccept, dipolar_MC1.n_lowaccept, dipolar_MC1.n_noaccept)
+            print(dipolar_MC1.temp, dipolar_MC1.avgenergy, dipolar_MC1.netmag, dipolar_MC1.sumspin, dipolar_MC1.sp_heat, dipolar_MC1.suscep, dipolar_MC1.ul, dipolar_MC1.ul2, dipolar_MC1.n_highaccept, dipolar_MC1.n_lowaccept, dipolar_MC1.n_noaccept)
         #save the draw lattice data
         if (display):
         
