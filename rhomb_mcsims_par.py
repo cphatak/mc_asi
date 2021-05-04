@@ -89,6 +89,9 @@ def run_MC(n_run, #job ID number
     
     #variable for pair flip
     pairflip = False
+    
+    #initialize the random number series
+    np.random.seed()
 
 
     #next we initialize the lattice.
