@@ -88,6 +88,9 @@ def run_MC(n_run, #job ID number
     #variable for pair flip
     pairflip = False
 
+    #initialize random number
+    np.random.seed()
+    
     #Compute number of islands.
     #6 islands per motif.
     n_isl = nx * ny * 6
