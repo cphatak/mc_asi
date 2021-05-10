@@ -39,6 +39,7 @@ class Dipolar_MC(object):
         self.angles = np.zeros([self.n_isl])
         self.max_nn_num = max_nn_num
         self.max_nn_dist = max_nn_dist
+        self.max_spcr_num = max_nn_num * 2
         
         #folder location.
         self.dir = dir
@@ -51,6 +52,9 @@ class Dipolar_MC(object):
         comb_xy = self.centers.transpose()
         p_list = list(comb_xy)
         self.nn_inds = self.do_kdtree(comb_xy, p_list, max_nn_num+1, max_nn_dist)
+        #get indices for computing spin correlation for n=2*max_nn_num
+        self.spcr_nn_inds = self.do_kdtree(comb_xy,p_list,max_nn_num*2 + 1, max_nn_dist * 2)
+        
         #MC simulation parameters - default values
         #they can be changed after definition.
         self.mc_iters = 1000 #total MC iters
@@ -89,6 +93,7 @@ class Dipolar_MC(object):
         self.avgenergy = 0
         self.netmag = np.sqrt(np.sum(self.magx)**2 + np.sum(self.magy)**2)
         self.sumspin = np.sum(self.magx) + np.sum(self.magy)
+        self.sisj = np.zeros([5,self.max_spcr_num])
         self.sp_heat = 0
         self.suscep = 0
         self.ul = 0
@@ -349,6 +354,8 @@ class Dipolar_MC(object):
         avg_sumspin = 0.0
         avg_sumspin2 = 0.0
         avg_sumspin4 = 0.0
+        sisj_arr = np.zeros([4,self.max_spcr_num])
+        sp_corr_cnt = 0.0
         
         #reset the counters for accepted values.
         self.n_lowaccept = 0
@@ -365,8 +372,8 @@ class Dipolar_MC(object):
             for ii in range(self.n_isl):
                 # pick a random site in the lattice.
                 site = np.random.randint(0,self.n_isl)
-                if (debug):
-                    print(site)
+                #if (debug):
+                #    print(site)
     
                 #change the magnetization
                 self.magx[site] *= (-1)
@@ -379,15 +386,15 @@ class Dipolar_MC(object):
     
                 #calculate the change in energy
                 dE = self.Calc_del_Energy(site, pairflip = pairflip)*2.0
-                if (debug):
-                    print(dE)
+                #if (debug):
+                #    print(dE)
     
                 #check if we should accept this energy or not
                 if (dE < 0):
                     self.n_lowaccept += 1
                     self.energy += dE
-                    if (debug):
-                        print('Low accept')
+                #    if (debug):
+                #        print('Low accept')
                 
                 if (dE > 0):
                     #we check if we should accept the high energy change
@@ -426,6 +433,27 @@ class Dipolar_MC(object):
                     avg_sumspin += self.sumspin
                     avg_sumspin2 += self.sumspin**2
                     avg_sumspin4 += self.sumspin**4
+                    
+                    #compute the spin correlation
+                    for ii in range(self.n_isl):
+                        for cc in range(self.max_spcr_num):
+                        
+                            jj = self.spcr_nn_inds[ii,cc].astype('int')
+                            
+                            if ((jj != self.n_isl)):
+                                si_mod = np.sqrt(self.magx[ii]**2 + self.magy[ii]**2)
+                                sj_mod = np.sqrt(self.magx[jj]**2 + self.magy[jj]**2)
+                                si_sj = self.magx[ii]*self.magx[jj] + self.magy[ii]*self.magy[jj]
+                                sisj_arr[0,cc] = self.distmap[ii,jj]
+                                sisj_arr[1,cc] += (si_sj)
+                                sisj_arr[2,cc] += (np.sqrt(self.magx[ii]**2 + self.magy[ii]**2))
+                                sisj_arr[3,cc] += (np.sqrt(self.magx[jj]**2 + self.magy[jj]**2))
+                                
+                                sp_corr_cnt += 1.0
+                                #if debug:
+                                #    print('Spin Corr values:',si_sj, si_mod, sj_mod)
+                                                                
+                            
                 
                 #Save the file if needed
                 if (np.mod(nn,save_file) == 0):
@@ -446,10 +474,19 @@ class Dipolar_MC(object):
         self.suscep = (avg_mag2*cn - avg_mag*avg_mag*cn**2)/self.temp
         self.ul = 1.0 - (avg_mag4*cn/(3.0*(avg_mag2*cn)**2))
         self.ul2 = 1.0 - (avg_sumspin4*cn/(3.0*(avg_sumspin2*cn)**2))
+        self.sisj[0,:] = sisj_arr[0,:]
+        self.sisj[1,:] = sisj_arr[1,:]*cn/self.max_spcr_num
+        self.sisj[2,:] = sisj_arr[2,:]*cn/self.max_spcr_num
+        self.sisj[3,:] = sisj_arr[3,:]*cn/self.max_spcr_num
+        self.sisj[4,:] = sisj_arr[1,:]*cn/self.max_spcr_num - sisj_arr[2,:]*sisj_arr[3,:]*cn**2/self.max_spcr_num**2
+        #self.sisj[4,:] = self.sisj[1,:] - self.sisj[2,:]*self.sisj[3,:]
+        
         
         #print some output
         if verbose:
             print("\n MC iter complete at temp:",self.temp)
+            print("\n sp_corr_cnt = ",1.0/sp_corr_cnt)
+            print("\n norm. number = ",cn/self.max_spcr_num)
         return 1
 
 

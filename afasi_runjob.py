@@ -22,7 +22,7 @@ import os as os
 #Running for mltiple values of a and s
 a_vals = np.array([350])
 s_vals = np.array([150])
-th = 90.0
+th = 30.0
 n_a = a_vals.size
 n_s = s_vals.size
 
@@ -34,7 +34,7 @@ for ia in range(n_a):
         # Running the parallel version.
         #
         # LAttice and MC parameters.
-        num_runs = 10 #Number of runs in parallel to perform.
+        num_runs = 3 #Number of runs in parallel to perform.
         a = a_vals[ia]#350.0 #Lattice parameter
         s = s_vals[js]#120.0 #island separation
         nx = 3 #num of islands along x
@@ -42,19 +42,19 @@ for ia in range(n_a):
         th = th #rotation angles
         mc_iters = 50 #number of MC iterations
         eq_iters = 0 #number of equilibriation iterations
-        start_temp = 10.0 #Start temperature
-        end_temp = 1.0 #end temperature
+        start_temp = 1.0e-6 #Start temperature
+        end_temp = 1.0e-11 #end temperature
         n_temp = 20 #number of temperature steps
         red_fac = 'Linear' #reduction factor - 'Linear' or 'Geometric'
         save_file = 2000 #Save file every N steps in the MC iters.
         load_file = False #load magnetic config data during MC runs
         file_name = "MCrun_mag_run0_199.txt"
         verbose = True
-        display = True
+        display = False
         lattice_draw_step = 5
         
         #set working directory
-        work_dir = '/Users/cphatak/work/af_asi/test/'+str(nx)+'x'+str(ny)+'_set'+str(set_num)
+        work_dir = '/Users/cphatak/ANL_work/artificial_qsl/mc_sims/test/'+str(nx)+'x'+str(ny)+'_set'+str(set_num)
         
         #get system information
         print_sysinfo()
@@ -92,12 +92,12 @@ for ia in range(n_a):
                                 fldr = work_dir+'/')
         
         #Also run the Ising Pair analysis
-        res2 = afasi_isingpairs(a = int(a), s = int(s), run_num = 0, fldr = work_dir+'/', lattice_draw_step = lattice_draw_step)
+        #res2 = afasi_isingpairs(a = int(a), s = int(s), run_num = 0, fldr = work_dir+'/', lattice_draw_step = lattice_draw_step)
         
         #then tar all the run output files.
-        os.system("tar -zcf "+work_dir+"/results_runs_data.tar.gz "+work_dir+"/run*")
+        #os.system("tar -zcf "+work_dir+"/results_runs_data.tar.gz "+work_dir+"/run*")
         
         #then delete all the run files
-        os.system("rm -rf "+work_dir+"/run*")
+        #os.system("rm -rf "+work_dir+"/run*")
 
 

@@ -184,7 +184,7 @@ def run_MC(n_run, #job ID number
     #Start the sims
     for i in range(n_temp):
         dipolar_MC1.temp = temp_var[i]
-        dipolar_MC1.MC_move(verbose=verbose, pairflip=pairflip, save_file=save_file) #optional argument verbose.
+        dipolar_MC1.MC_move(verbose=verbose, pairflip=pairflip, save_file=save_file, debug=False) #optional argument verbose.
         f = open(dir+data_file,"a+")
         f.write('{0:.4e}, {1:.4e}, {2:.3f}, {3:.3f}, {4:.4e}, {5:.4e}, {6:.3f}, {7:.3f}, {8:5d}, {9:5d}, {10:5d}\n'.format(
             dipolar_MC1.temp, dipolar_MC1.avgenergy, dipolar_MC1.netmag, dipolar_MC1.sumspin, dipolar_MC1.sp_heat, 
@@ -206,10 +206,21 @@ def run_MC(n_run, #job ID number
         #save magnetization data
         f2 = open(dir+'MCrun_mag_'+jobID+'_'+str(i)+'.txt','w+')
         f2.write('# Num islands {0:3d} \n'.format(dipolar_MC1.n_isl))
-        for i in range(dipolar_MC1.n_isl):
-            f2.write('{0:.3f}, {1:.3f} \n'.format(dipolar_MC1.magx[i],dipolar_MC1.magy[i]))
+        for im in range(dipolar_MC1.n_isl):
+            f2.write('{0:.3f}, {1:.3f} \n'.format(dipolar_MC1.magx[im],dipolar_MC1.magy[im]))
 
         f2.close()
+        
+        #save spin correlation data
+        f3 = open(dir+'MCrun_spincorr_'+jobID+'_'+str(i)+'.txt','w+')
+        f3.write('# Num islands {0:3d} \n'.format(dipolar_MC1.n_isl))
+        f3.write('# Max sp_cr islands {0:3d} \n'.format(dipolar_MC1.max_spcr_num))
+        f3.write('# Temperature {0:.4e} \n'.format(dipolar_MC1.temp))
+        for isc in range(dipolar_MC1.max_spcr_num):
+            f3.write('{0:.3f}, {1:.3f}, {2:.3f}, {3:.3f}, {4:.3f} \n'.format(dipolar_MC1.sisj[0,isc],dipolar_MC1.sisj[1,isc],dipolar_MC1.sisj[2,isc],dipolar_MC1.sisj[3,isc],dipolar_MC1.sisj[4,isc]))
+        
+        f3.close()
+        
         
         #Update current energy
         current_energy = dipolar_MC1.avgenergy
