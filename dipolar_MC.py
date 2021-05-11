@@ -10,6 +10,7 @@
 
 #import necessary modules
 import numpy as np
+from numpy.core.numerictypes import maximum_sctype
 import scipy.constants as physcon
 from scipy.spatial import cKDTree as sp_cKDTree
 
@@ -354,7 +355,8 @@ class Dipolar_MC(object):
         avg_sumspin = 0.0
         avg_sumspin2 = 0.0
         avg_sumspin4 = 0.0
-        sisj_arr = np.zeros([4,self.max_spcr_num])
+        #sisj_arr = np.zeros([4,self.max_spcr_num])
+        sisj_corr = [[] for _ in range(self.max_spcr_num)]
         sp_corr_cnt = 0.0
         
         #reset the counters for accepted values.
@@ -435,23 +437,28 @@ class Dipolar_MC(object):
                     avg_sumspin4 += self.sumspin**4
                     
                     #compute the spin correlation
-                    for ii in range(self.n_isl):
-                        for cc in range(self.max_spcr_num):
-                        
-                            jj = self.spcr_nn_inds[ii,cc].astype('int')
-                            
-                            if ((jj != self.n_isl)):
-                                si_mod = np.sqrt(self.magx[ii]**2 + self.magy[ii]**2)
-                                sj_mod = np.sqrt(self.magx[jj]**2 + self.magy[jj]**2)
-                                si_sj = self.magx[ii]*self.magx[jj] + self.magy[ii]*self.magy[jj]
-                                sisj_arr[0,cc] = self.distmap[ii,jj]
-                                sisj_arr[1,cc] += (si_sj)
-                                sisj_arr[2,cc] += (np.sqrt(self.magx[ii]**2 + self.magy[ii]**2))
-                                sisj_arr[3,cc] += (np.sqrt(self.magx[jj]**2 + self.magy[jj]**2))
-                                
-                                sp_corr_cnt += 1.0
-                                #if debug:
-                                #    print('Spin Corr values:',si_sj, si_mod, sj_mod)
+                    #for ii in range(self.n_isl):
+                    #    for cc in range(self.max_spcr_num):
+                    #    
+                    #        jj = self.spcr_nn_inds[ii,cc].astype('int')
+                    #        
+                    #        if ((jj != self.n_isl)):
+                    #            si_mod = np.sqrt(self.magx[ii]**2 + self.magy[ii]**2)
+                    #            sj_mod = np.sqrt(self.magx[jj]**2 + self.magy[jj]**2)
+                    #            si_sj = self.magx[ii]*self.magx[jj] + self.magy[ii]*self.magy[jj]
+                    #            sisj_arr[0,cc] = self.distmap[ii,jj]
+                    #            sisj_arr[1,cc] += (si_sj)
+                    #            sisj_arr[2,cc] += (np.sqrt(self.magx[ii]**2 + self.magy[ii]**2))
+                    #            sisj_arr[3,cc] += (np.sqrt(self.magx[jj]**2 + self.magy[jj]**2))
+                    #            
+                    #            sp_corr_cnt += 1.0
+                    #            #if debug:
+                    #            #    print('Spin Corr values:',si_sj, si_mod, sj_mod)
+                    for nth in range(self.max_spcr_num):
+                        for icor in range(len(self.magx)):
+                            c_temp = self.magx[icor]*self.magx[self.spcr_nn_inds[icor][nth]] + self.magy[icor]*self.magy[self.spcr_nn_inds[icor][nth]]
+                            sisj_corr[nth].append(c_temp)
+
                                                                 
                             
                 
@@ -474,11 +481,14 @@ class Dipolar_MC(object):
         self.suscep = (avg_mag2*cn - avg_mag*avg_mag*cn**2)/self.temp
         self.ul = 1.0 - (avg_mag4*cn/(3.0*(avg_mag2*cn)**2))
         self.ul2 = 1.0 - (avg_sumspin4*cn/(3.0*(avg_sumspin2*cn)**2))
-        self.sisj[0,:] = sisj_arr[0,:]
-        self.sisj[1,:] = sisj_arr[1,:]*cn/self.max_spcr_num
-        self.sisj[2,:] = sisj_arr[2,:]*cn/self.max_spcr_num
-        self.sisj[3,:] = sisj_arr[3,:]*cn/self.max_spcr_num
-        self.sisj[4,:] = sisj_arr[1,:]*cn/self.max_spcr_num - sisj_arr[2,:]*sisj_arr[3,:]*cn**2/self.max_spcr_num**2
+        #self.sisj[0,:] = sisj_arr[0,:]
+        #self.sisj[1,:] = sisj_arr[1,:]*cn/self.max_spcr_num
+        #self.sisj[2,:] = sisj_arr[2,:]*cn/self.max_spcr_num
+        #self.sisj[3,:] = sisj_arr[3,:]*cn/self.max_spcr_num
+        #self.sisj[4,:] = sisj_arr[1,:]*cn/self.max_spcr_num - sisj_arr[2,:]*sisj_arr[3,:]*cn**2/self.max_spcr_num**2
+        for nth2 in range(self.max_spcr_num):
+            self.sisj[0,nth2] = sum(sisj_corr[nth2])/len(sisj_corr[nth2])
+        
         #self.sisj[4,:] = self.sisj[1,:] - self.sisj[2,:]*self.sisj[3,:]
         
         
@@ -488,7 +498,13 @@ class Dipolar_MC(object):
             print("\n sp_corr_cnt = ",1.0/sp_corr_cnt)
             print("\n norm. number = ",cn/self.max_spcr_num)
         return 1
-
+#------------------------------------------------------------------
+    #
+    # spin_corr function.
+    #
+    # This function will take the input parameters of the mag array, indices
+    # of nearest neighbors and which NN corelation we want to compute, and return
+    #
 
 ## MAIN ##
 if __name__ == '__main__':
