@@ -40,7 +40,7 @@ class Dipolar_MC(object):
         self.angles = np.zeros([self.n_isl])
         self.max_nn_num = max_nn_num
         self.max_nn_dist = max_nn_dist
-        self.max_spcr_num = max_nn_num * 2
+        self.max_spcr_num = max_nn_num*2
         
         #folder location.
         self.dir = dir
@@ -54,7 +54,7 @@ class Dipolar_MC(object):
         p_list = list(comb_xy)
         self.nn_inds = self.do_kdtree(comb_xy, p_list, max_nn_num+1, max_nn_dist)
         #get indices for computing spin correlation for n=2*max_nn_num
-        self.spcr_nn_inds = self.do_kdtree(comb_xy,p_list,max_nn_num*2 + 1, max_nn_dist * 2)
+        self.spcr_nn_inds = self.do_kdtree(comb_xy,p_list,max_nn_num*2+1, max_nn_dist*2)
         
         #MC simulation parameters - default values
         #they can be changed after definition.
@@ -356,6 +356,7 @@ class Dipolar_MC(object):
         avg_sumspin2 = 0.0
         avg_sumspin4 = 0.0
         #sisj_arr = np.zeros([4,self.max_spcr_num])
+        sisj_distvals = np.zeros([self.max_spcr_num])
         sisj_corr = [[] for _ in range(self.max_spcr_num)]
         sp_corr_cnt = 0.0
         
@@ -455,9 +456,12 @@ class Dipolar_MC(object):
                     #            #if debug:
                     #            #    print('Spin Corr values:',si_sj, si_mod, sj_mod)
                     for nth in range(self.max_spcr_num):
-                        for icor in range(len(self.magx)):
-                            c_temp = self.magx[icor]*self.magx[self.spcr_nn_inds[icor][nth]] + self.magy[icor]*self.magy[self.spcr_nn_inds[icor][nth]]
-                            sisj_corr[nth].append(c_temp)
+                        for icor in range(self.n_isl):
+                            jcor = self.spcr_nn_inds[icor][nth]
+                            if (jcor != self.n_isl):
+                                sisj_distvals[nth] = self.distmap[icor,jcor]
+                                c_temp = self.magx[icor]*self.magx[jcor] + self.magy[icor]*self.magy[jcor]
+                                sisj_corr[nth].append(c_temp)
 
                                                                 
                             
@@ -487,7 +491,8 @@ class Dipolar_MC(object):
         #self.sisj[3,:] = sisj_arr[3,:]*cn/self.max_spcr_num
         #self.sisj[4,:] = sisj_arr[1,:]*cn/self.max_spcr_num - sisj_arr[2,:]*sisj_arr[3,:]*cn**2/self.max_spcr_num**2
         for nth2 in range(self.max_spcr_num):
-            self.sisj[0,nth2] = sum(sisj_corr[nth2])/len(sisj_corr[nth2])
+            self.sisj[0,nth2] = sisj_distvals[nth2]
+            self.sisj[1,nth2] = sum(sisj_corr[nth2])/len(sisj_corr[nth2])
         
         #self.sisj[4,:] = self.sisj[1,:] - self.sisj[2,:]*self.sisj[3,:]
         
@@ -495,8 +500,7 @@ class Dipolar_MC(object):
         #print some output
         if verbose:
             print("\n MC iter complete at temp:",self.temp)
-            print("\n sp_corr_cnt = ",1.0/sp_corr_cnt)
-            print("\n norm. number = ",cn/self.max_spcr_num)
+
         return 1
 #------------------------------------------------------------------
     #
