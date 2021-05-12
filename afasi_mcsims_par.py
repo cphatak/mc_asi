@@ -110,7 +110,11 @@ def run_MC(n_run, #job ID number
     dipolar_MC1.energy = dipolar_MC1.Latt_Energy(debug=False)
     current_energy = dipolar_MC1.energy
     print("Current Energy:",dipolar_MC1.energy)
-    
+
+    ff = open(dir+'MC_nn_inds.txt','w+')
+    ff.write(str(dipolar_MC1.nn_inds))
+    ff.close()
+
     #save the images if display option is set
     if (display):
     
@@ -184,6 +188,8 @@ def run_MC(n_run, #job ID number
     #Start the sims
     for i in range(n_temp):
         dipolar_MC1.temp = temp_var[i]
+        if verbose:
+            print(i,dipolar_MC1.temp)
         dipolar_MC1.MC_move(verbose=verbose, pairflip=pairflip, save_file=save_file, debug=False) #optional argument verbose.
         f = open(dir+data_file,"a+")
         f.write('{0:.4e}, {1:.4e}, {2:.3f}, {3:.3f}, {4:.4e}, {5:.4e}, {6:.3f}, {7:.3f}, {8:5d}, {9:5d}, {10:5d}\n'.format(
