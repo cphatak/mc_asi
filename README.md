@@ -1,3 +1,3 @@
 ** README.md **
 
-These codes are for performing MC simulations on artificial antiferromagnetic spin liquid lattices.
+These codes are for performing MC simulations on artificial antiferromagnetic spin ice lattices.
