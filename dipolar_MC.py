@@ -255,8 +255,8 @@ class Dipolar_MC(object):
                     si_rij = (self.centers[0,i]-self.centers[0,j])*self.magx[i] 
                     + (self.centers[1,i]-self.centers[1,j])*self.magy[i]
                     
-                    sj_rji = (self.centers[0,j]-self.centers[0,i])*self.magx[j] 
-                    + (self.centers[1,j]-self.centers[1,i])*self.magy[j]
+                    sj_rji = (self.centers[0,i]-self.centers[0,j])*self.magx[j]
+                    + (self.centers[1,i]-self.centers[1,j])*self.magy[j]
                     
                     temp = (((si_sj)/r_ij**3) - ((3.0*si_rij*sj_rji)/r_ij**5))
                     tot_energy +=  temp
@@ -298,8 +298,8 @@ class Dipolar_MC(object):
                         si_rij = (self.centers[0,i]-self.centers[0,j])*self.magx[i] 
                         + (self.centers[1,i]-self.centers[1,j])*self.magy[i]
                         
-                        sj_rji = (self.centers[0,j]-self.centers[0,i])*self.magx[j] 
-                        + (self.centers[1,j]-self.centers[1,i])*self.magy[j]
+                        sj_rji = (self.centers[0,i]-self.centers[0,j])*self.magx[j]
+                        + (self.centers[1,i]-self.centers[1,j])*self.magy[j]
                         
                         temp = (((si_sj)/r_ij**3) - ((3.0*si_rij*sj_rji)/r_ij**5))
                         site_energy +=  temp
@@ -320,8 +320,8 @@ class Dipolar_MC(object):
                     si_rij = (self.centers[0,i]-self.centers[0,j])*self.magx[i] 
                     + (self.centers[1,i]-self.centers[1,j])*self.magy[i]
                     
-                    sj_rji = (self.centers[0,j]-self.centers[0,i])*self.magx[j] 
-                    + (self.centers[1,j]-self.centers[1,i])*self.magy[j]
+                    sj_rji = (self.centers[0,i]-self.centers[0,j])*self.magx[j]
+                    + (self.centers[1,i]-self.centers[1,j])*self.magy[j]
                     
                     temp = (((si_sj)/r_ij**3) - ((3.0*si_rij*sj_rji)/r_ij**5))
                     site_energy +=  temp
