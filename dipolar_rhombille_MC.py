@@ -112,6 +112,7 @@ class Dipolar_Rhomb_MC(object):
         self.netmag = np.sqrt(np.sum(self.magx)**2 + np.sum(self.magy)**2)
         self.sp_heat = 0
         self.suscep = 0
+        self.ul = 0
         
         #print output message
         print("Created the Dipolar_MC class.")
@@ -438,6 +439,7 @@ class Dipolar_Rhomb_MC(object):
                     avg_en2 += self.energy**2
                     avg_mag += self.netmag
                     avg_mag2 += self.netmag**2
+                    avg_mag4 += self.netmag**4
                 
                 #Save the file if needed
                 if (np.mod(nn,save_file) == 0):
@@ -455,6 +457,7 @@ class Dipolar_Rhomb_MC(object):
         self.netmag = avg_mag*cn
         self.sp_heat = (avg_en2*cn - avg_en*avg_en*cn**2)/self.temp**2
         self.suscep = (avg_mag2*cn - avg_mag*avg_mag*cn**2)/self.temp
+        self.ul = 1.0 - (avg_mag4*cn/(3.0*(avg_mag2*cn)**2))
         
         #print some output
         if verbose:
