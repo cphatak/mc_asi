@@ -25,6 +25,7 @@ latt_types = np.asarray(['manual'])
 man_fname = 'rhombus1_20210215_quarry.txt'
 n_a = a_vals.size
 n_l = latt_types.size
+base_workdir_name = '/Users/cphatak/work/spinice/rhomb_latt/dual_kag_MC/'
 
 
 for ia in range(n_a):
@@ -57,7 +58,7 @@ for ia in range(n_a):
         lattice_draw_step = 5
         
         #set working directory
-        work_dir = '/Users/cphatak/work/spinice/rhomb_latt/dual_kag_MC/'+str(nx)+'x'+str(ny)+'_set'+str(set_num)
+        work_dir = base_workdir_name+str(nx)+'x'+str(ny)+'_set'+str(set_num)
         
         #get system information
         print_sysinfo()
