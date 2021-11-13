@@ -13,7 +13,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import datetime
 import os
-from draw_lattice import draw_lattice
+#from draw_lattice import draw_lattice
 
 def afasi_analyzedata(a = 350, #lattice parameter
                       s = 120, #separation

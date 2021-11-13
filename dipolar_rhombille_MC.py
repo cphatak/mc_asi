@@ -367,6 +367,7 @@ class Dipolar_Rhomb_MC(object):
         avg_en2 = 0.0
         avg_mag = 0.0
         avg_mag2 = 0.0
+        avg_mag4 = 0.0
         
         #reset the counters for accepted values.
         self.n_lowaccept = 0

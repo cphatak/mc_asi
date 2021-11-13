@@ -50,8 +50,11 @@ def rhomb_analyzedata(a = 350, #lattice parameter
                       fname_base + subdir_base + str(num_run) + '.txt')
         
     
-    data = np.asarray([np.genfromtxt(filename,delimiter=',',skip_header=header_skip) for filename in fnames])
-    
+    data_list = [np.genfromtxt(filename,delimiter=',',skip_header=header_skip) for filename in fnames]
+
+    #we need to trim the data to the min index
+    min_ind = np.min([len(listitem) for listitem in data_list])
+    data = np.asarray([i[0:min_ind,:] for i in data_list])
     
     #compute the averages
     avg_data = np.mean(data,axis=0)
