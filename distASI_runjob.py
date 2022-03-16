@@ -14,8 +14,8 @@ import matplotlib as mpl
 #determine if linux
 mpl.use('Agg') # for linux operation.
 import multiprocessing as mp
-from rhomb_mcsims_par import print_sysinfo,run_MC
-from rhomb_analyzedata import rhomb_analyzedata
+from distASI_mcsims_par import print_sysinfo,run_MC
+from distASI_analyzedata import distASI_analyzedata
 import os as os
 
 
@@ -73,7 +73,6 @@ for ia in range(n_a):
                                                   a, #Lattice parameter
                                                   nx, #num of islands along x
                                                   ny, #num of islands along y
-                                                  latt_type, #Type of Rhombille lattice.
                                                   man_fname, #Name of the file for manual lattice.
                                                   nn_num, #Max number of NN
                                                   nn_dist, #Max distance of NN
@@ -95,7 +94,7 @@ for ia in range(n_a):
         print('Total runs completed:',nproc)
         
         #Once the run is complete, then we run analyze_data to average the results.
-        res = rhomb_analyzedata(a = int(a), tot_runs = nproc, run_num = 0, lattice_draw_step = lattice_draw_step,
+        res = distASI_analyzedata(a = int(a), tot_runs = nproc, run_num = 0, lattice_draw_step = lattice_draw_step,
                                 fldr = work_dir+'/')
         
         #then tar all the run output files.
