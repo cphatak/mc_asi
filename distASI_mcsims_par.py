@@ -49,7 +49,6 @@ def run_MC(n_run, #job ID number
            a, #Lattice parameter
            nx, #num of islands along x
            ny, #num of islands along y
-           latt_type, #Type of Rhombille lattice.
            man_fname, #Name of the file for manual loading of lattices
            nn_num, #Max number of NN to consider
            nn_dist, #Max distance for NN.
@@ -165,7 +164,6 @@ def run_MC(n_run, #job ID number
     f.write('# a = {0:.1f}\n'.format(a))
     f.write('# nx = {0:2d}\n'.format(nx))
     f.write('# ny = {0:2d}\n'.format(ny))
-    f.write('# Latt Type = {0}\n'.format(latt_type))
     f.write('# Latt Name = {0}\n'.format(man_fname))
     f.write('# Num isl = {0:4d}\n'.format(n_isl))
     f.write('# Max. NN = {0:2d}\n'.format(max_nn_num))
