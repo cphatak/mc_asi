@@ -26,12 +26,13 @@ man_fname = 'rhombus1_20210215_quarry.txt'
 n_a = a_vals.size
 n_l = latt_types.size
 base_workdir_name = '/Users/cphatak/work/spinice/rhomb_latt/dual_kag_MC/'
+job_id = 1
 
 
 for ia in range(n_a):
     for jl in range(n_l):
 
-        set_num = n_l*ia + jl + 1
+        set_num = n_l*ia + jl + job_id
         #
         # Running the parallel version.
         #
@@ -39,13 +40,13 @@ for ia in range(n_a):
         num_runs = 10 #Number of runs in parallel to perform.
         a = a_vals[ia]#350.0 #Lattice parameter
         #set nearest neighbor information
-        nn_num = 9
-        nn_dist = 4 * a
+        nn_num = 100
+        nn_dist = 50 * a
         latt_type = latt_types[jl] #type of lattice.
         nx = 5 #num of islands along x
         ny = 5 #num of islands along y
-        mc_iters = 1000 #number of MC iterations
-        eq_iters = 100 #number of equilibriation iterations
+        mc_iters = 3000 #number of MC iterations
+        eq_iters = 1500 #number of equilibriation iterations
         start_temp = 1.0e-5 #Start temperature
         end_temp = 1.0e-11 #end temperature
         n_temp = 300 #number of temperature steps

@@ -191,7 +191,7 @@ def run_MC(n_run, #job ID number
         dipolar_MC1.temp = temp_var[i]
         dipolar_MC1.MC_move(verbose=verbose, pairflip=pairflip, save_file=save_file) #optional argument verbose.
         f = open(dir+data_file,"a+")
-        f.write('{0:.4e}, {1:.4e}, {2:.3f}, {3:.4e}, {4:.4e}, {5:5d}, {6:5d}, {7:5d}\n'.format(dipolar_MC1.temp, dipolar_MC1.avgenergy, dipolar_MC1.netmag, dipolar_MC1.sp_heat, dipolar_MC1.suscep, dipolar_MC1.n_lowaccept, dipolar_MC1.n_highaccept, dipolar_MC1.n_noaccept))
+        f.write('{0:.4e}, {1:.4e}, {2:.3f}, {3:.4e}, {4:.4e}, {5:.4e}, {6:5d}, {7:5d}, {8:5d}\n'.format(dipolar_MC1.temp, dipolar_MC1.avgenergy, dipolar_MC1.netmag, dipolar_MC1.sp_heat, dipolar_MC1.suscep, dipolar_MC1.ul, dipolar_MC1.n_lowaccept, dipolar_MC1.n_highaccept, dipolar_MC1.n_noaccept))
         f.close()
         if verbose:
             print(dipolar_MC1.temp, dipolar_MC1.avgenergy, dipolar_MC1.netmag, dipolar_MC1.sp_heat, dipolar_MC1.suscep, dipolar_MC1.ul, dipolar_MC1.n_highaccept, dipolar_MC1.n_lowaccept, dipolar_MC1.n_noaccept)
