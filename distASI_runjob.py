@@ -22,7 +22,7 @@ import os as os
 #Running for mltiple values of a and s
 a_vals = np.asarray([300])
 latt_types = np.asarray(['manual'])
-man_fname = 'rhombus1_20210215_quarry.txt'
+man_fname = '/home/cphatak/micromagnetic_sims/dist_asi/dist_ASI_latt_info_001.txt'
 n_a = a_vals.size
 n_l = latt_types.size
 base_workdir_name = '/Users/cphatak/work/spinice/rhomb_latt/dual_kag_MC/'

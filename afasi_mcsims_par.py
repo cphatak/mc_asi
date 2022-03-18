@@ -233,9 +233,9 @@ def run_MC(n_run, #job ID number
         
         #Now we are checking for activating pair flip.
         #If the total accepted changes are zero and net magnetization is zero, then we activate it.
-        if (((dipolar_MC1.n_highaccept + dipolar_MC1.n_lowaccept) == 0) and (dipolar_MC1.netmag == 0)):
-            pairflip = True
-            print('Activated Pair Flip at temp {0:.4e}'.format(dipolar_MC1.temp))
+        #if (((dipolar_MC1.n_highaccept + dipolar_MC1.n_lowaccept) == 0) and (dipolar_MC1.netmag == 0)):
+        #    pairflip = True
+        #    print('Activated Pair Flip at temp {0:.4e}'.format(dipolar_MC1.temp))
         
         #check if the MC simulation has reached final state.
         if (((dipolar_MC1.n_highaccept+dipolar_MC1.n_lowaccept) == 0) and ((dipolar_MC1.avgenergy - current_energy) == 0)):

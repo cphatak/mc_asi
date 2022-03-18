@@ -114,7 +114,7 @@ def distASI_analyzedata(a = 350, #lattice parameter
         col_arr = np.arctan2(mag_data[:,1],mag_data[:,0])
         q1 = ax1.quiver(centers[:,0],centers[:,1],mag_data[:,0],mag_data[:,1],col_arr,pivot='mid',scale=25,headwidth=5)
         #plt.draw()
-        plt.savefig(opdir+'Lattice_state_'+str(i)+'.jpg',bbox_inches='tight', dpi=150, quality=95)
+        plt.savefig(opdir+'Lattice_state_'+str(i)+'.png',bbox_inches='tight', dpi=300)
         plt.close()
 
         #calling draw lattice.

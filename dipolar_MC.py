@@ -460,20 +460,19 @@ class Dipolar_MC(object):
                     #            #if debug:
                     #            #    print('Spin Corr values:',si_sj, si_mod, sj_mod)
                     #for icor in range(self.n_isl):
-                    for nth in range(self.max_spcr_num):
+                    #for nth in range(self.max_spcr_num):
                         #jcor = self.spcr_nn_inds[:][nth]
                         #jcor[jcor >= self.n_isl] = self.n_isl-1
                         #if (jcor != self.n_isl):
-                        sisj_distvals[nth] = self.distmap[self.n_isl//2,(self.spcr_nn_inds[self.n_isl//2][nth])]
-                        c_temp = self.magx[:]*self.magx[self.spcr_nn_inds[:,nth]] + self.magy[:]*self.magy[self.spcr_nn_inds[:,nth]]
+                    #    sisj_distvals[nth] = self.distmap[self.n_isl//2,(self.spcr_nn_inds[self.n_isl//2][nth])]
+                    #    c_temp = self.magx[:]*self.magx[self.spcr_nn_inds[:,nth]] + self.magy[:]*self.magy[self.spcr_nn_inds[:,nth]]
                         
                         #sisj_distvals[nth] = self.distmap[0,jcor[nth]]
                         #c_temp = self.magx[:]*self.magx[jcor] + self.magy[:]*self.magy[jcor]
                         
-                        sisj_corr[nth].append(c_temp[:])
-                       
+                    #    #sisj_corr[nth].append(c_temp[:])
 
-                                                                
+                                                                            
                             
                 
                 #Save the file if needed
@@ -502,9 +501,9 @@ class Dipolar_MC(object):
         #self.sisj[4,:] = sisj_arr[1,:]*cn/self.max_spcr_num - sisj_arr[2,:]*sisj_arr[3,:]*cn**2/self.max_spcr_num**2
         #print(c_temp.shape)
         #print(sum(sum(sisj_corr[0]))/len(sisj_corr[0])/self.n_isl)
-        for nth2 in range(self.max_spcr_num):
-            self.sisj[0,nth2] = sisj_distvals[nth2]
-            self.sisj[1,nth2] = sum(sum(sisj_corr[nth2]))/len(sisj_corr[nth2])/self.n_isl
+        #for nth2 in range(self.max_spcr_num):
+        #    self.sisj[0,nth2] = sisj_distvals[nth2]
+        #    self.sisj[1,nth2] = sum(sum(sisj_corr[nth2]))/len(sisj_corr[nth2])/self.n_isl
         
         #self.sisj[4,:] = self.sisj[1,:] - self.sisj[2,:]*self.sisj[3,:]
         

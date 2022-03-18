@@ -25,6 +25,7 @@ s_vals = np.array([150])
 th = 30.0
 n_a = a_vals.size
 n_s = s_vals.size
+basedir_name = '/Users/cphatak/ANL_work/artificial_qsl/mc_sims/test/'
 
 for ia in range(n_a):
     for js in range(n_s):
@@ -54,7 +55,7 @@ for ia in range(n_a):
         lattice_draw_step = 5
         
         #set working directory
-        work_dir = '/Users/cphatak/ANL_work/artificial_qsl/mc_sims/test/'+str(nx)+'x'+str(ny)+'_set'+str(set_num)
+        work_dir = basedir_name+str(nx)+'x'+str(ny)+'_set'+str(set_num)
         
         #get system information
         print_sysinfo()
